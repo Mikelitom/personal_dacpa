@@ -30,6 +30,8 @@ const studentsMenu: MenuItem[] = [
   { href: "/dashboard/settings", icon: Settings, text: "Configuración" }
 ];
 
+const adminMenu: MenuItem
+
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const menu = studentsMenu;
