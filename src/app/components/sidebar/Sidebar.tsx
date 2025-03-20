@@ -17,7 +17,7 @@ interface MenuItem {
 
 const studentsMenu: MenuItem[] = [
   { href: "/dashboard", icon: Home, text: "Inicio" },
-  { href: "/colegiatura", icon: CircleDollarSign, text: "Colegiatura" },
+  { href: "/dashboard/colegiatura", icon: CircleDollarSign, text: "Colegiatura" },
   { 
     icon: Store, text: "Productos", subItems: [
       { href: "/books", icon: Book, text: "Libros" },
@@ -29,8 +29,6 @@ const studentsMenu: MenuItem[] = [
   { href: "/profile", icon: UserPen, text: "Perfil" },
   { href: "/dashboard/settings", icon: Settings, text: "Configuración" }
 ];
-
-const adminMenu: MenuItem
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
