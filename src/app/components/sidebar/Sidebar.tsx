@@ -7,6 +7,7 @@ import {
   BookOpenCheck, ShoppingCart, ChevronDown, ChevronUp, 
   Book, Shirt, Store
 } from "lucide-react";
+import { useDashboard } from "@/contexts/DashboardContext";
 
 interface MenuItem {
   href?: string;
@@ -33,6 +34,7 @@ const studentsMenu: MenuItem[] = [
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const menu = studentsMenu;
+  const { setCurrentTitle } = useDashboard();
 
   return (
     <aside className={`h-screen bg-pink-200 text-black p-4 transition-all ${isOpen ? "w-64" : "w-20"}`}>

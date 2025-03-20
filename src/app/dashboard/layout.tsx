@@ -10,7 +10,7 @@ export default function DashboardLayout(this: any, { children }: { children: Rea
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex flex-col flex-1">
-        <Navbar />
+        <Navbar title='Inicio' user='Miguel Fajardo'/>
         <main className="p-6">
           {children}
         </main>
