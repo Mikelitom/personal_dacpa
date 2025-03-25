@@ -1,42 +1,63 @@
-import { createContext, useState, useContext, ReactNode} from 'react'
+'use client'
+import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
+// Definición de tipo para el usuario
+interface User {
+  name: string;
+  email?: string;
+  role?: string;
+}
+
+// Definición del contexto
 interface DashboardContextType {
   currentTitle: string;
   setCurrentTitle: (title: string) => void;
-  currentUser: {
-    name: string
-    role?: string
-  };
-  setCurrentUser: (user: { name: string; role?: string }) => void;
+  currentUser: User;
+  setCurrentUser: (user: User) => void;
 }
 
-const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
+// Creación del contexto
+const DashboardContext = createContext<DashboardContextType>({
+  currentTitle: 'Inicio',
+  setCurrentTitle: () => {},
+  currentUser: { name: 'Usuario' },
+  setCurrentUser: () => {}
+});
 
-export const useDashboard = () => {
-  const context = useContext(DashboardContext);
-  if (!context) {
-    throw new Error("useDashboard debe de usarse dentro de un DashboardProvider");
-  }
-  return context;
-}
+// Hook personalizado para usar el contexto
+export const useDashboard = () => useContext(DashboardContext);
 
-export const DashboardProvider = ({ children, initialUser}: {
-  children: ReactNode,
-  initialUser: { name: string; role?: string }
-}) => {
-  const [ currentTitle, setCurrentTitle ] = useState<string>('Inicio');
-  const [ currentUser, setCurrentUser ] = useState(initialUser);
+// Proveedor del contexto
+export const DashboardProvider = ({ children }: { children: ReactNode }) => {
+  const [currentTitle, setCurrentTitle] = useState('Inicio');
+  const [currentUser, setCurrentUser] = useState<User>({ 
+    name: 'Miguel Fajardo', 
+    email: 'miguel@ejemplo.com',
+    role: 'estudiante'
+  });
 
-  const value = {
-    currentTitle,
-    setCurrentTitle,
-    currentUser,
-    setCurrentUser
-  }
+  // Puedes añadir lógica para recuperar el usuario de la sesión aquí
+  useEffect(() => {
+    // Ejemplo de cómo podrías obtener el usuario de la sesión
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setCurrentUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing user data', error);
+      }
+    }
+  }, []);
 
   return (
-    <DashboardContext.Provider value={value}>
+    <DashboardContext.Provider value={{ 
+      currentTitle, 
+      setCurrentTitle, 
+      currentUser, 
+      setCurrentUser 
+    }}>
       {children}
     </DashboardContext.Provider>
   );
-}
+};

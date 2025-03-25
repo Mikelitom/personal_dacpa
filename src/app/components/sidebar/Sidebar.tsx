@@ -1,7 +1,7 @@
 "use client";
-import { useState, ElementType } from "react";
+import { useState, ElementType, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home, Settings, LogOut, Menu, UserPen, CircleDollarSign, 
   BookOpenCheck, ShoppingCart, ChevronDown, ChevronUp, 
@@ -35,6 +35,27 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const menu = studentsMenu;
   const { setCurrentTitle } = useDashboard();
+  const pathname = usePathname();
+
+  // Set initial title based on current path when component mounts
+  useEffect(() => {
+    const currentItem = findCurrentMenuItem(menu, pathname);
+    if (currentItem) {
+      setCurrentTitle(currentItem.text);
+    }
+  }, [pathname, menu, setCurrentTitle]);
+
+  // Helper function to find the current menu item based on pathname
+  const findCurrentMenuItem = (items: MenuItem[], path: string): MenuItem | null => {
+    for (const item of items) {
+      if (item.href === path) return item;
+      if (item.subItems) {
+        const found = item.subItems.find(subItem => subItem.href === path);
+        if (found) return found;
+      }
+    }
+    return null;
+  };  
 
   return (
     <aside className={`h-screen bg-pink-200 text-black p-4 transition-all ${isOpen ? "w-64" : "w-20"}`}>
@@ -47,13 +68,25 @@ export default function Sidebar() {
       <nav className="space-y-4">
         {menu.map((item, index) =>
           item.subItems ? (
-            <SidebarDropdown key={index} {...item} isOpen={isOpen} />
+            <SidebarDropdown 
+              key={index} 
+              {...item} 
+              isOpen={isOpen} 
+              setCurrentTitle={setCurrentTitle} 
+            />
           ) : (
-            <SidebarItem key={index} href={item.href!} icon={item.icon} text={item.text} isOpen={isOpen} />
+            <SidebarItem 
+              key={index} 
+              href={item.href!} 
+              icon={item.icon} 
+              text={item.text} 
+              isOpen={isOpen} 
+              setCurrentTitle={setCurrentTitle} 
+            />
           )
         )}
         <div className="absolute bottom-4 p-3">
-          <SidebarItem href="/" icon={LogOut} text="Salir" isOpen={isOpen} />
+          <SidebarItem href="/" icon={LogOut} text="Salir" isOpen={isOpen} setCurrentTitle={setCurrentTitle} />
         </div>
       </nav>
 
@@ -61,26 +94,59 @@ export default function Sidebar() {
   );
 }
 
-function SidebarItem({ href, icon: Icon, text, isOpen }: { href: string; icon: React.ElementType; text: string; isOpen: boolean }) {
+function SidebarItem({ 
+  href, 
+  icon: Icon, 
+  text, 
+  isOpen, 
+  setCurrentTitle 
+}: { 
+  href: string; 
+  icon: React.ElementType; 
+  text: string; 
+  isOpen: boolean;
+  setCurrentTitle: (title: string) => void;
+}) {
   const pathname = usePathname();
   const isActive = pathname === href;
+  const router = useRouter();
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setCurrentTitle(text);
+    router.push(href);
+  };
 
   return (
-    <Link 
+    <a 
       href={href} 
+      onClick={handleClick}
       className={`flex items-center gap-4 p-3 rounded-md transition-all 
         ${isActive ? "bg-pink-400 text-white" : "hover:bg-pink-300"}`}
     >
       <Icon className="w-6 h-6" />
       {isOpen && <span>{text}</span>}
-    </Link>
+    </a>
   );
 }
 
-function SidebarDropdown({ icon: Icon, text, isOpen, subItems = [] }: { icon: React.ElementType; text: string; isOpen: boolean; subItems?: MenuItem[] }) {
+function SidebarDropdown({ 
+  icon: Icon, 
+  text, 
+  isOpen, 
+  subItems = [],
+  setCurrentTitle
+}: { 
+  icon: React.ElementType; 
+  text: string; 
+  isOpen: boolean; 
+  subItems?: MenuItem[];
+  setCurrentTitle: (title: string) => void;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const pathname = usePathname();
   const isActive = subItems.some((sub) => sub.href === pathname);
+  const router = useRouter();
 
   return (
     <div>
@@ -99,16 +165,24 @@ function SidebarDropdown({ icon: Icon, text, isOpen, subItems = [] }: { icon: Re
         <div className="ml-6 mt-2 space-y-2">
           {subItems.map((subItem, index) => {
             const isSubActive = pathname === subItem.href;
+            
+            const handleSubItemClick = (e: React.MouseEvent) => {
+              e.preventDefault();
+              setCurrentTitle(subItem.text);
+              router.push(subItem.href!);
+            };
+            
             return (
-              <Link 
+              <a
                 key={index} 
-                href={subItem.href!} 
+                href={subItem.href!}
+                onClick={handleSubItemClick}
                 className={`flex items-center gap-4 p-2 rounded-md transition-all 
                   ${isSubActive ? "bg-pink-400 text-white" : "hover:bg-pink-300"}`}
               >
                 <subItem.icon className="w-5 h-5" />
                 {isOpen && <span>{subItem.text}</span>}
-              </Link>
+              </a>
             );
           })}
         </div>
