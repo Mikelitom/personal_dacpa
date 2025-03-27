@@ -1,6 +1,6 @@
 "use client" // Indica que este componente se ejecuta en el lado del cliente
 
-import { useState } from "react"; // Importa el hook useState de React
+import { SetStateAction, useState } from "react"; // Importa el hook useState de React
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"; // Importa componentes de tarjeta
 import { Button } from "@/app/components/ui/button"; // Importa el componente de botón
 import { Input } from "@/app/components/ui/input"; // Importa el componente de entrada
@@ -65,7 +65,7 @@ export default function ColegiaturaPage() {
               <Label htmlFor="estudiante">Seleccione Estudiante</Label>
               <Select
                 value={estudiante}
-                onValueChange={(value) => {
+                onValueChange={(value: SetStateAction<string>) => {
                   setEstudiante(value)
                   const est = estudiantes.find((e) => e.id === value)
                   if (est) setMonto(est.monto)
