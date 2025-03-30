@@ -21,8 +21,8 @@ const studentsMenu: MenuItem[] = [
   { href: "/dashboard/colegiatura", icon: CircleDollarSign, text: "Colegiatura" },
   { 
     icon: Store, text: "Productos", subItems: [
-      { href: "/books", icon: Book, text: "Libros" },
-      { href: "/uniforms", icon: Shirt, text: "Uniforme" }
+      { href: "/dashboard/productos/books", icon: Book, text: "Libros" },
+      { href: "/dashboard/productos/uniforms", icon: Shirt, text: "Uniforme" }
     ] 
   },
   { href: "/cart", icon: ShoppingCart, text: "Carrito" },
