@@ -25,7 +25,7 @@ const studentsMenu: MenuItem[] = [
       { href: "/dashboard/productos/uniforms", icon: Shirt, text: "Uniforme" }
     ] 
   },
-  { href: "/cart", icon: ShoppingCart, text: "Carrito" },
+  { href: "/dashboard/carrito", icon: ShoppingCart, text: "Carrito" },
   { href: "/status", icon: BookOpenCheck, text: "Estado de Cuenta" },
   { href: "/profile", icon: UserPen, text: "Perfil" },
   { href: "/dashboard/settings", icon: Settings, text: "Configuración" }
