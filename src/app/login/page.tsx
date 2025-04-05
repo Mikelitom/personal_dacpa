@@ -5,34 +5,42 @@ import { useState } from "react";
 export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [ form, setForm ] = useState({ user: '', password: ''});
 
   const handleLogin = async () => {
+    e.preventDefault();
     setLoading(true);
     document.cookie = "token=valid-token; path=/dashboard";
     router.push("/dashboard");
   };
 
   const handleLoginAdmin = async () => {
+    e.preventDefault();
     setLoading(true);
     document.cookie = "token=valid-token; path=/admin-dashboard";
     router.push("/admin-dashboard");
   }
 
+  function loginUser( user: string, password: string ) {
+    if (form.username == 'alumno' && form.password == 'alumno') {
+      handleLogin()
+    } else if (form.user == 'admin' && form.password == 'admin') {
+      handleLoginAdmin()
+    } else {
+      alert('Usuario y/o contraseña equivocado')
+    }
+  }
+
+
   return (
     <div className="flex h-screen w-full bg-gradient-to-br from-purple-50 to-purple-100">
       {/* Left side with blue background */}
       <div className="hidden md:flex md:w-2/5 flex-col bg-gradient-to-b from-blue-400 to-blue-500 text-white p-10 relative overflow-hidden">
-        {/* Decorative waves */}
-        <div className="absolute bottom-0 left-0 right-0 h-64 opacity-20">
-          <div className="w-full h-24 bg-white rounded-t-full transform translate-y-10"></div>
-          <div className="w-full h-32 bg-white rounded-t-full transform translate-y-6"></div>
-        </div>
-        
+               
         {/* Content */}
         <div className="relative z-10">
-          <div className="font-bold text-2xl mb-16">COMPANY LOGO</div>
-          
-          <h1 className="text-4xl font-bold mb-4">Welcome to...</h1>
+          <div className="font-bold text-2xl mb-16">COLEGIO DAC</div>
+          <h1 className="text-4xl font-bold mb-4">Bienvenidos</h1>
           
           <p className="mb-8 opacity-90">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
@@ -50,30 +58,31 @@ export default function Login() {
       <div className="w-full md:w-3/5 flex justify-center items-center p-6">
         <div className="w-full max-w-md">
           <div className="text-center md:text-left">
-            <h2 className="text-3xl font-bold text-blue-500 mb-2">Login</h2>
-            <p className="text-gray-500 mb-8">
-              Welcome! Login to get amazing discounts and offers only for you.
-            </p>
+            <h2 className="text-3xl font-bold text-blue-500 mb-2">Iniciar Sesion</h2> 
           </div>
           
           <form>
             <div className="mb-6">
-              <label htmlFor="username" className="block text-gray-500 mb-2">User Name</label>
+              <label htmlFor="username" className="block text-gray-500 mb-2">Usuario</label>
               <div className="relative">
                 <input 
                   type="text" 
                   id="username" 
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
             
             <div className="mb-6">
-              <label htmlFor="password" className="block text-gray-500 mb-2">Password</label>
+              <label htmlFor="password" className="block text-gray-500 mb-2">Contraseña</label>
               <div className="relative">
                 <input 
                   type="password" 
                   id="password" 
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -82,6 +91,7 @@ export default function Login() {
             <button 
               type="submit" 
               className="w-full bg-blue-500 text-white py-3 rounded-md font-medium hover:bg-blue-600 transition duration-300"
+              onClick={loginUser()}
             >
               LOGIN
             </button>
