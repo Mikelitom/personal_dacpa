@@ -40,10 +40,10 @@ export default function PaymentCalendar() {
     { id: 'dom', label: 'D' },
     { id: 'lun', label: 'L' },
     { id: 'mar', label: 'M' },
+    { id: 'mie', label: 'M' },
     { id: 'jue', label: 'J' },
     { id: 'vie', label: 'V' },
-    { id: 'sab', label: 'S' },
-    { id: 'dom2', label: 'D' }
+    { id: 'sab', label: 'S' }
   ];
   
   // Día de pago y límite de días adicionales
