@@ -5,26 +5,27 @@ import { useState } from "react";
 export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [ form, setForm ] = useState({ user: '', password: ''});
+  const [ form, setForm ] = useState({ username: "", password: ""});
 
   const handleLogin = async () => {
-    e.preventDefault();
     setLoading(true);
     document.cookie = "token=valid-token; path=/dashboard";
     router.push("/dashboard");
   };
 
   const handleLoginAdmin = async () => {
-    e.preventDefault();
     setLoading(true);
     document.cookie = "token=valid-token; path=/admin-dashboard";
     router.push("/admin-dashboard");
   }
 
-  function loginUser( user: string, password: string ) {
-    if (form.username == 'alumno' && form.password == 'alumno') {
+  const loginUser = ( e: React.FormEvent ) => {
+    e.preventDefault(); // Prevenir el comportamiento por defecto del form
+    
+    console.log("User: " + form.username + " password: " + form.password)
+    if (form.username === "alumno" && form.password === "alumno") {
       handleLogin()
-    } else if (form.user == 'admin' && form.password == 'admin') {
+    } else if (form.username === "admin" && form.password === "admin") {
       handleLoginAdmin()
     } else {
       alert('Usuario y/o contraseña equivocado')
@@ -61,7 +62,7 @@ export default function Login() {
             <h2 className="text-3xl font-bold text-blue-500 mb-2">Iniciar Sesion</h2> 
           </div>
           
-          <form>
+          <form onSubmit={loginUser}>
             <div className="mb-6">
               <label htmlFor="username" className="block text-gray-500 mb-2">Usuario</label>
               <div className="relative">
@@ -91,7 +92,6 @@ export default function Login() {
             <button 
               type="submit" 
               className="w-full bg-blue-500 text-white py-3 rounded-md font-medium hover:bg-blue-600 transition duration-300"
-              onClick={loginUser()}
             >
               LOGIN
             </button>
