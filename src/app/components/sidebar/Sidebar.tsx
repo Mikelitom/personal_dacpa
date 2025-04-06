@@ -26,8 +26,8 @@ const studentsMenu: MenuItem[] = [
     ] 
   },
   { href: "/dashboard/carrito", icon: ShoppingCart, text: "Carrito" },
-  { href: "/status", icon: BookOpenCheck, text: "Estado de Cuenta" },
-  { href: "/profile", icon: UserPen, text: "Perfil" },
+  { href: "/dashboard/estado_cuenta", icon: BookOpenCheck, text: "Estado de Cuenta" },
+  { href: "/dashboard/profile", icon: UserPen, text: "Perfil" },
   { href: "/dashboard/settings", icon: Settings, text: "Configuración" }
 ];
 
