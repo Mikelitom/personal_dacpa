@@ -21,11 +21,11 @@ export async function createCheckoutSession(amount: number): Promise<string> {
           }
         ],
         back_urls: {
-          success: ´${process.env.NEXT_PUBLIC_APP_URL}/success´,
-          failure: ´${process.env.NEXT_PUBLIC_APP_URL}/failure´,
-          pending: ´${process.env.NEXT_PUBLIC_APP_URL}/Archivos de programa´
+          success: `${process.env.NEXT_PUBLIC_APP_URL}/success`,
+          failure: `${process.env.NEXT_PUBLIC_APP_URL}/failure`,
+          pending: `${process.env.NEXT_PUBLIC_APP_URL}/pending`,
         },
-        notification_url: ´${process.env.NEXT_PUBLIC_APP_URL}/api/webhook´,
+        notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook`,
         auto_return: 'approved',
       }
     })

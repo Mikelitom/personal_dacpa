@@ -8,6 +8,9 @@ import { Label } from "@/app/components/ui/label"; // Importa el componente de e
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"; // Importa componentes de selección
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"; // Importa componentes de pestañas
 import { CreditCard, CheckCircle2 } from "lucide-react"; // Importa íconos de lucide-react
+import { createCheckoutSession } from '@/app/actions'
+import { useToast } from '@/app/components/ui/use-toast'
+
 
 // Componente principal para la página de colegiatura
 export default function ColegiaturaPage() {
@@ -23,6 +26,32 @@ export default function ColegiaturaPage() {
     { id: "est1", nombre: "Ana Pérez González", grado: "1°A", monto: "1500.00" },
     { id: "est2", nombre: "Carlos Pérez González", grado: "3°B", monto: "1500.00" },
   ];
+
+  const handlePayment = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const amount = 1500.00
+
+      const url = await createCheckoutSession(Number.parseFloat(amount))
+
+      if (url) {
+        window.location.href = url
+      } else {
+        throw new Error('No se pudo crear la sesion de pago.')
+      }
+    } catch (error) {
+      console.error('Error al procesar el pago: ', error)
+      toast({
+        title: 'Error',
+        description: 'Ocurrio un error al procesar el pago. Intente nuevamente.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false);
+    }
+
+  }
 
   // Función para manejar el proceso de pago
   const handlePagar = () => {
@@ -105,57 +134,12 @@ export default function ColegiaturaPage() {
                   </div>
                 </div>
 
-                {/* Método de pago */}
-                <div className="space-y-2">
-                  <Label>Método de Pago</Label>
-                  <Tabs defaultValue="tarjeta" onValueChange={setMetodo}>
-                    <TabsList className="grid grid-cols-2">
-                      <TabsTrigger value="tarjeta">Tarjeta de Crédito</TabsTrigger>
-                      <TabsTrigger value="transferencia">Transferencia</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="tarjeta" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="cardNumber">Número de Tarjeta</Label>
-                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="expiry">Fecha de Expiración</Label>
-                          <Input id="expiry" placeholder="MM/AA" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="cvc">CVC</Label>
-                          <Input id="cvc" placeholder="123" />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cardName">Nombre en la Tarjeta</Label>
-                        <Input id="cardName" placeholder="Juan Pérez" />
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="transferencia" className="space-y-4 mt-4">
-                      <div className="bg-blue-50 p-4 rounded-md space-y-2">
-                        <p className="font-medium">Datos para Transferencia:</p>
-                        <p>Banco: Banco Nacional</p>
-                        <p>Cuenta: 0123 4567 8901 2345</p>
-                        <p>CLABE: 012 345 6789012345678</p>
-                        <p>Beneficiario: Colegio Ejemplo</p>
-                        <p>Referencia: {estudiante}</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="comprobante">Subir Comprobante</Label>
-                        <Input id="comprobante" type="file" />
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </div>
+                
               </>
             )}
           </CardContent>
           <CardFooter>
-            <Button className="w-full" disabled={!estudiante || pagando} onClick={handlePagar}>
+            <Button className="w-full" disabled={!estudiante || pagando} onClick={handlePayment}>
               {pagando ? (
                 <>
                   <span className="animate-spin mr-2">⟳</span>
