@@ -36,7 +36,7 @@ export default function Login() {
   return (
     <div className="flex h-screen w-full bg-gradient-to-br from-purple-50 to-purple-100">
       {/* Left side with blue background */}
-      <div className="hidden md:flex md:w-2/5 flex-col bg-gradient-to-b from-blue-400 to-blue-500 text-white p-10 relative overflow-hidden">
+      <div className="hidden md:flex md:w-2/5 flex-col bg-gradient-to-b from-pink-400 to-pink-500 text-white p-10 relative overflow-hidden">
                
         {/* Content */}
         <div className="relative z-10">
@@ -59,7 +59,7 @@ export default function Login() {
       <div className="w-full md:w-3/5 flex justify-center items-center p-6">
         <div className="w-full max-w-md">
           <div className="text-center md:text-left">
-            <h2 className="text-3xl font-bold text-blue-500 mb-2">Iniciar Sesion</h2> 
+            <h2 className="text-3xl font-bold text-pink-500 mb-2">Iniciar Sesion</h2> 
           </div>
           
           <form onSubmit={loginUser}>
@@ -91,7 +91,7 @@ export default function Login() {
             
             <button 
               type="submit" 
-              className="w-full bg-blue-500 text-white py-3 rounded-md font-medium hover:bg-blue-600 transition duration-300"
+              className="w-full bg-pink-300 text-white py-3 rounded-md font-medium hover:bg-pink-400 transition duration-300"
             >
               LOGIN
             </button>
