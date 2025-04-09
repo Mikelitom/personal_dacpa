@@ -15,18 +15,26 @@ import { Toaster } from "@/app/components/ui/toaster"
 
 export default function UniformesPage() {
   const { toast } = useToast()
+  const { uniformes, setUniformes } = useState([])
+  const { loading, setLoading } = useState(true)
+  const { error, setError } = useState(null)
   const [carrito, setCarrito] = useState<{ [key: string]: boolean }>({})
   const [pedidos, setPedidos] = useState<{ [key: string]: boolean }>({})
   const [tallas, setTallas] = useState<{ [key: string]: string }>({})
   const [cantidades, setCantidades] = useState<{ [key: string]: number }>({})
   const [carritoCount, setCarritoCount] = useState(0)
 
+  useEffect(() => {
+    const fetchUniformes = async () => {
+
+    }
+  })
   // Datos de ejemplo para los uniformes
   const uniformes = [
     {
       id: "unif-1",
       nombre: "Uniforme de Diario (Niña)",
-      imagen: "/placeholder.svg?height=300&width=250",
+      imagen: "/placeholder.svg?height=300&width=250", 
       precio: 950,
       tallas: ["4", "6", "8", "10", "12", "14", "16"],
       stock: {
