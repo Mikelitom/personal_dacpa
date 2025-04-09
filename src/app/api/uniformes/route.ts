@@ -1,5 +1,5 @@
 export async function GET() {
-  const uniforms = [
+  const uniformes = [
     {
       id: "unif-1",
       nombre: "Uniforme de Diario (Niña)",
