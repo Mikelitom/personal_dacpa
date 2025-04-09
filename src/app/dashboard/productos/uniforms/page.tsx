@@ -275,7 +275,7 @@ export default function UniformesPage() {
                 <CardContent>
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="relative h-64 w-full md:w-1/2 flex items-center justify-center">
-                      <Image
+                      <img
                         src={uniforme.imagen || "/placeholder.svg"}
                         alt={uniforme.nombre}
                         width={250}

@@ -2,8 +2,8 @@ export async function GET() {
   const uniformes = [
     {
       id: "unif-1",
-      nombre: "Uniforme de Diario (Niña)",
-      imagen: `${process.env.NEXT_PUBLIC_APP_URL}/uniformes/uniformes_gala_niña.jpg?height=300&width=250`,
+      nombre: "Uniforme de Diario Niña",
+      imagen: '/uniforme_normal_nina.jpg',
       precio: 950,
       tallas: ["4", "6", "8", "10", "12", "14", "16"],
       stock: {
