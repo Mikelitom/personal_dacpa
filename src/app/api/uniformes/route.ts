@@ -3,7 +3,7 @@ export async function GET() {
     {
       id: "unif-1",
       nombre: "Uniforme de Diario (Niña)",
-      imagen: "/placeholder.svg?height=300&width=250",
+      imagen: `${process.env.NEXT_PUBLIC_APP_URL}/uniformes/uniformes_gala_niña.jpg?height=300&width=250`,
       precio: 950,
       tallas: ["4", "6", "8", "10", "12", "14", "16"],
       stock: {
