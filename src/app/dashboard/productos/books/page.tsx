@@ -34,7 +34,7 @@ export default function BooksPage() {
         const data = await response.json()
         setPaquetes(data)
         setLoading(false)
-      } catch (error) {
+      } catch (error: any) {
         setError(error.message)
         setLoading(false)
         toast({
