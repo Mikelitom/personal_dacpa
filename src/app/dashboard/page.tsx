@@ -1,21 +1,19 @@
-import WelcomeBanner from "../components/welcomeBanner/WelcomeBanner";
-import NotificationSection from "../components/notificationSection/notificationSection";
-import PaymentCalendar from "../components/paymentCalendar/PaymentCalendar";
+'use client';
+
+import type React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Button } from '@/app/components/ui/button';
+import { Badge } from '@/app/components/ui/badge';
+import { CreditCard, BookOpen, ShoppingBag, Calendar, AlertCircle, CheckCircle, FileText } from 'lucide-react';
 
 export default function DashboardPage() {
   return (
-    <div className="flex-grow">
-      {/* Renderiza el banner de bienvenida en la parte superior de la página */}
-      <WelcomeBanner />
-      
-      {/* Contenedor con diseño de cuadrícula para organizar los componentes en dos columnas en pantallas medianas en adelante */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Renderiza la sección de notificaciones */}
-        <NotificationSection />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <Card className='border-gray-200 shadow-md mb-8 overflow-hidden'>
         
-        {/* Renderiza el calendario de pagos */}
-        <PaymentCalendar />
-      </div>
+      </Card> 
     </div>
   );
 }
