@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { User } from '@/app/types/user';
+import { Card, CardContent } from '../ui/card';
+import { Badge } from '../ui/badge';
 
 interface WelcomeBannerProps {
   user?: User;
@@ -43,6 +45,7 @@ export function WelcomeBanner({ user }: WelcomeBannerProps) {
           <h1 className="text-2xl font-bold text-gray-800">
             {greeting}, {user.name || 'Usuario'}
           </h1>
+          <p className="text-gray-600 mt-1">Gestiona colegiaturas, uniformes y libros en un solo lugar.</p>
           <p className="text-gray-600 mt-1">
             {currentTime}
           </p>
@@ -52,5 +55,6 @@ export function WelcomeBanner({ user }: WelcomeBannerProps) {
         </div>
       </div>
     </div>
-  );
+  )
+  
 }

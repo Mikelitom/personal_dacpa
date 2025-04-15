@@ -12,11 +12,118 @@ interface PaymentCalendarProps {
 export function PaymentCalendar({ paymentDates = [] }: PaymentCalendarProps) {
   // Estado para controlar hidratación
   const [isClient, setIsClient] = useState(false);
+  // Estados para controlar el mes y año actual del calendario
+  const [currentMonth, setCurrentMonth] = useState(0);
+  const [currentYear, setCurrentYear] = useState(0);
+  // Estado para almacenar la estructura del calendario
+  const [calendarDays, setCalendarDays] = useState<Array<Array<{ day: number; isCurrentMonth: boolean; type?: string }>>>([]);
 
   // Activamos los cálculos solo en el cliente
   useEffect(() => {
+    const now = new Date();
+    setCurrentMonth(now.getMonth());
+    setCurrentYear(now.getFullYear());
     setIsClient(true);
   }, []);
+
+  // Generar el calendario cada vez que cambia el mes o año
+  useEffect(() => {
+    if (isClient) {
+      generateCalendarDays(currentMonth, currentYear);
+    }
+  }, [currentMonth, currentYear, isClient, paymentDates]);
+
+  // Función para generar los días del calendario
+  const generateCalendarDays = (month: number, year: number) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    const startDayOfWeek = firstDay.getDay(); // 0 = Sunday, 6 = Saturday
+    const daysInMonth = lastDay.getDate();
+    
+    // Obtener días del mes anterior
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    
+    // Crear una matriz para representar el calendario
+    const calendar: Array<Array<{ day: number; isCurrentMonth: boolean; type?: string }>> = [];
+    let dayCounter = 1;
+    let nextMonthDay = 1;
+    
+    // Para cada semana (6 semanas máximo para cubrir todos los casos)
+    for (let week = 0; week < 6; week++) {
+      const weekDays = [];
+      
+      // Para cada día de la semana
+      for (let day = 0; day < 7; day++) {
+        if (week === 0 && day < startDayOfWeek) {
+          // Días del mes anterior
+          weekDays.push({
+            day: prevMonthLastDay - (startDayOfWeek - day - 1),
+            isCurrentMonth: false
+          });
+        } else if (dayCounter <= daysInMonth) {
+          // Días del mes actual
+          // Verificar si este día tiene un evento especial
+          let dayType;
+          
+          // Verificar fechas especiales (por ejemplo, día de pago = 10, deadline = 12, evento = 20)
+          if (dayCounter === 10) dayType = "payment";
+          else if (dayCounter === 12) dayType = "deadline";
+          else if (dayCounter === 20) dayType = "event";
+          
+          // También revisar si hay coincidencia con las fechas en paymentDates
+          const matchingDate = paymentDates.find(date => 
+            date.day === dayCounter && date.month === month + 1 && date.year === year
+          );
+          
+          if (matchingDate) {
+            dayType = matchingDate.type;
+          }
+          
+          weekDays.push({
+            day: dayCounter,
+            isCurrentMonth: true,
+            type: dayType
+          });
+          dayCounter++;
+        } else {
+          // Días del mes siguiente
+          weekDays.push({
+            day: nextMonthDay,
+            isCurrentMonth: false
+          });
+          nextMonthDay++;
+        }
+      }
+      
+      calendar.push(weekDays);
+      
+      // Si ya hemos completado el mes y estamos en una nueva semana, podemos parar
+      if (dayCounter > daysInMonth && week >= 3) break;
+    }
+    
+    setCalendarDays(calendar);
+  };
+
+  // Función para navegar al mes anterior
+  const goToPreviousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  // Función para navegar al mes siguiente
+  const goToNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
 
   // Si no estamos en el cliente aún, mostrar un esqueleto
   if (!isClient) {
@@ -37,26 +144,12 @@ export function PaymentCalendar({ paymentDates = [] }: PaymentCalendarProps) {
     );
   }
 
-  // Calcular el mes y año directamente cuando estamos en el cliente
-  // No necesitamos useState para esto ya que isClient asegura que solo se ejecute en el navegador
-  const now = new Date();
+  // Nombres de los meses en español
   const months = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ];
-  const currentMonth = months[now.getMonth()];
-  const currentYear = now.getFullYear();
 
-  // Datos pre-calculados para el calendario
-  const calendarDays = [
-    [{ day: 28, isCurrentMonth: false }, { day: 29, isCurrentMonth: false }, { day: 30, isCurrentMonth: false }, { day: 1, isCurrentMonth: true }, { day: 2, isCurrentMonth: true }, { day: 3, isCurrentMonth: true }, { day: 4, isCurrentMonth: true }],
-    [{ day: 5, isCurrentMonth: true }, { day: 6, isCurrentMonth: true }, { day: 7, isCurrentMonth: true }, { day: 8, isCurrentMonth: true }, { day: 9, isCurrentMonth: true }, { day: 10, isCurrentMonth: true, type: "payment" }, { day: 11, isCurrentMonth: true }],
-    [{ day: 12, isCurrentMonth: true, type: "deadline" }, { day: 13, isCurrentMonth: true }, { day: 14, isCurrentMonth: true }, { day: 15, isCurrentMonth: true }, { day: 16, isCurrentMonth: true }, { day: 17, isCurrentMonth: true }, { day: 18, isCurrentMonth: true }],
-    [{ day: 19, isCurrentMonth: true }, { day: 20, isCurrentMonth: true, type: "event" }, { day: 21, isCurrentMonth: true }, { day: 22, isCurrentMonth: true }, { day: 23, isCurrentMonth: true }, { day: 24, isCurrentMonth: true }, { day: 25, isCurrentMonth: true }],
-    [{ day: 26, isCurrentMonth: true }, { day: 27, isCurrentMonth: true }, { day: 28, isCurrentMonth: true }, { day: 29, isCurrentMonth: true }, { day: 30, isCurrentMonth: true }, { day: 31, isCurrentMonth: true }, { day: 1, isCurrentMonth: false }]
-  ];
-
-  // Resto del componente igual...
   return (
     <Card className="border-gray-200 shadow-md">
       <CardHeader className="pb-2 border-b border-gray-100">
@@ -69,14 +162,20 @@ export function PaymentCalendar({ paymentDates = [] }: PaymentCalendarProps) {
         {/* Contenido del calendario... */}
         <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
           <div className="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
-            <button className="p-1 rounded-full hover:bg-gray-200 transition-colors">
+            <button 
+              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              onClick={goToPreviousMonth}
+            >
               {/* Icono para mes anterior */}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </button>
-            <div className="font-medium text-gray-700">{currentMonth} {currentYear}</div>
-            <button className="p-1 rounded-full hover:bg-gray-200 transition-colors">
+            <div className="font-medium text-gray-700">{months[currentMonth]} {currentYear}</div>
+            <button 
+              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              onClick={goToNextMonth}
+            >
               {/* Icono para mes siguiente */}
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
@@ -130,19 +229,21 @@ export function PaymentCalendar({ paymentDates = [] }: PaymentCalendarProps) {
         <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <h4 className="font-medium text-gray-800 mb-2">Fechas importantes:</h4>
           <ul className="space-y-2 text-sm">
-            {paymentDates.map((date, index) => (
-              <li key={index} className="flex items-start">
-                <div className={`w-2 h-2 rounded-full mt-1.5 mr-2 ${getPaymentDateColor(date.type)}`}></div>
-                <div>
-                  <p className="text-gray-700">
-                    <span className="font-medium">
-                      {date.day}/{date.month}/{date.year}
-                    </span>{" "}
-                    - {date.description}
-                  </p>
-                </div>
-              </li>
-            ))}
+            {paymentDates
+              .filter(date => date.month === currentMonth + 1 && date.year === currentYear)
+              .map((date, index) => (
+                <li key={index} className="flex items-start">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 mr-2 ${getPaymentDateColor(date.type)}`}></div>
+                  <div>
+                    <p className="text-gray-700">
+                      <span className="font-medium">
+                        {date.day}/{date.month}/{date.year}
+                      </span>{" "}
+                      - {date.description}
+                    </p>
+                  </div>
+                </li>
+              ))}
           </ul>
         </div>
       </CardContent>
@@ -154,7 +255,7 @@ export function PaymentCalendar({ paymentDates = [] }: PaymentCalendarProps) {
 function renderCalendarDay(day: { day: number; isCurrentMonth: boolean; type?: string }) {
   // Si no es del mes actual, mostrar en color gris
   if (!day.isCurrentMonth) {
-    return <div className="text-gray-400">{day.day}</div>;
+    return <div className="text-gray-400 text-sm">{day.day}</div>;
   }
 
   // Si es un día especial, mostrar con formato especial
