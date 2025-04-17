@@ -49,7 +49,7 @@ export function Sidebar({ className, onCloseMobileMenu }: SidebarProps) {
       label: "Inicio",
     },
     {
-      href: "/dashboard/perfil",
+      href: "/dashboard/profile",
       icon: <User size={20} strokeWidth={1.5} />,
       label: "Perfil",
     },
