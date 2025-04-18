@@ -6,9 +6,9 @@ import { TutelaryData, StudentData } from "@/app/types/profile"
 import { SidePanel } from "./SidePanel"
 import { InfoPersonal } from "./tabs/InfoPersonal"
 import { Estudiantes } from "./tabs/Estudiantes"
-// import { HistorialPagos } from "./tabs/HistorialPagos"
-// import { Convenios } from "./tabs/Convenios"
-// import { Documentos } from "./tabs/Documentos"
+import { HistorialPagos } from './tabs/HistorialPagos'
+import { Convenios } from "./tabs/Convenios"
+import { Documentos } from "./tabs/Documentos"
 
 interface PerfilLayoutProps {
   tutelaryData: TutelaryData;

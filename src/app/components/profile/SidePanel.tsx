@@ -91,7 +91,7 @@ function NavButton({ icon, label, tabId, activeTab, setActiveTab }: NavButtonPro
   return (
     <Button
       variant={activeTab === tabId ? "default" : "ghost"}
-      className={`w-full justify-start ${activeTab === tabId ? "bg-pink-600 text-white" : "text-gray-700"}`}
+      className={`w-full justify-start ${activeTab === tabId ? "bg-pink-600 hover:bg-pink-700 hover:shadow-md hover:shadow-pink-200 text-white group-hover:translate-x-1" : "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm group-hover:translate-x-1"}`}
       onClick={() => setActiveTab(tabId)}
     >
       {icon}
