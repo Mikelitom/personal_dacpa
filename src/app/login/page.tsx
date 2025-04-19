@@ -16,7 +16,7 @@ export default function Login() {
   const handleLoginAdmin = async () => {
     setLoading(true);
     document.cookie = "token=valid-token; path=/admin-dashboard";
-    router.push("/admin-dashboard");
+    router.push("/admin_dashboard");
   }
 
   const loginUser = ( e: React.FormEvent ) => {
@@ -44,13 +44,11 @@ export default function Login() {
           <h1 className="text-4xl font-bold mb-4">Bienvenidos</h1>
           
           <p className="mb-8 opacity-90">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-            sed do eiusmod tempor incididunt ut labore et dolore 
-            magna aliqua.
+            
           </p>
           
           <div className="mt-auto pt-40">
-            <p className="opacity-90">Lorem ipsum dolor sit amet</p>
+            <p className="opacity-90">Despertar al Conocimiento</p>
           </div>
         </div>
       </div>

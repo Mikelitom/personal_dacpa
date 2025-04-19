@@ -1,22 +1,29 @@
-'use client'
 import type React from 'react';
-import { ReactNode } from 'react';
-import Sidebar from '../components/sidebar/Sidebar';
-import Navbar from '../components/navbar/Navbar';
-import { DashboardProvider } from '@/contexts/DashboardContext';
+import type { Metadata } from 'next';
+import { poppins, quicksand } from '../fonts'
+import '../globals.css';
+import { Sidebar } from '../components/dashboard/Sidebar';
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export const metadata: Metadata = {
+  title: 'Pagos DACPa',
+  description: 'Sistema de control de colegiatura y servicios colegio Despertar Al Conocimiento'
+}
+
+export default function RootLayout({
+  children
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
-    <DashboardProvider>
-      <div className="flex h-screen">
-        <Sidebar />
-        <div className="flex flex-col flex-1">
-          <Navbar />
-          <main className="p-6">
+    <div lang="es" className={`${poppins.variable} ${quicksand.variable}`}>
+      <div>
+        <div className='flex min-h-screen bg-gray-50 flex-col md:flex-row'>
+          <Sidebar />
+          <main className='pl-64 min-h-screen bg-gray-50'>
             {children}
           </main>
         </div>
       </div>
-    </DashboardProvider>
-  );
+    </div>
+  )
 }
