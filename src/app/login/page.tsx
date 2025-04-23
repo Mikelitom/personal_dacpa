@@ -1,37 +1,50 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Login() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [ form, setForm ] = useState({ username: "", password: ""});
-
-  const handleLogin = async () => {
+  const [ loading, setLoading ] = useState(false);
+  const [ correo, setCorreo ] = useState('');
+  const [ contraseña, setContraseña ] = useState('');
+  const [ error, setError ] = useState<string | null>(null);
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    document.cookie = "token=valid-token; path=/dashboard";
-    router.push("/dashboard");
-  };
+    setError(null);
 
-  const handleLoginAdmin = async () => {
-    setLoading(true);
-    document.cookie = "token=valid-token; path=/admin-dashboard";
-    router.push("/admin_dashboard");
-  }
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: correo,
+        password: contraseña
+      });
 
-  const loginUser = ( e: React.FormEvent ) => {
-    e.preventDefault(); // Prevenir el comportamiento por defecto del form
-    
-    console.log("User: " + form.username + " password: " + form.password)
-    if (form.username === "alumno" && form.password === "alumno") {
-      handleLogin()
-    } else if (form.username === "admin" && form.password === "admin") {
-      handleLoginAdmin()
-    } else {
-      alert('Usuario y/o contraseña equivocado')
+      if (authError) throw authError;
+
+      const { data: userData, error: userError } = await supabase
+        .from('Usuario')
+        .select('rol, nombre_completo, estado')
+        .eq('correo', correo)
+        .single();
+        
+      if (userError) throw userError;
+
+      if (userData.estado !== 'activo') {
+        throw new Error('Tu cuenta esta inactiva. Contacta al administrador.');
+      }
+
+      const dashboardUrl = userData.rol === 'admin' ? '/dashboard-admin' : '/dashboard';
+      router.push(dashboardUrl);
+      router.refresh();
+
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar sesion');
+    } finally {
+      setLoading(false);
     }
   }
-
 
   return (
     <div className="flex h-screen w-full bg-gradient-to-br from-purple-50 to-purple-100">
@@ -60,15 +73,15 @@ export default function Login() {
             <h2 className="text-3xl font-bold text-pink-500 mb-2">Iniciar Sesion</h2> 
           </div>
           
-          <form onSubmit={loginUser}>
+          <form onSubmit={handleLogin}>
             <div className="mb-6">
               <label htmlFor="username" className="block text-gray-500 mb-2">Usuario</label>
               <div className="relative">
                 <input 
                   type="text" 
                   id="username" 
-                  value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -80,8 +93,8 @@ export default function Login() {
                 <input 
                   type="password" 
                   id="password" 
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  value={contraseña}
+                  onChange={(e) => setContraseña(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
