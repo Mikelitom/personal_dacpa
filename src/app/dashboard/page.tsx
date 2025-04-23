@@ -11,6 +11,7 @@ import { UpcomingPayments } from "@/app/components/dashboard/UpcomingPayments";
 import { Notifications } from "@/app/components/dashboard/Notifications";
 import { PaymentCalendar } from "@/app/components/dashboard/PaymentCalendar";
 import { StudentSummary } from "@/app/components/dashboard/StudentSummary";
+import { useSession } from 'next-auth/react';
 
 // Datos fallback para evitar errores de hidratación
 const placeholderData = {
@@ -28,12 +29,15 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
     placeholderData as unknown as User
   );
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
   // Nuevo estado para controlar hidratación
   useEffect(() => {
     // Marcar que estamos en el cliente inmediatamente
     const fetchUser = async () => {
+      if (!session?.user?.) return;
+      
       try {
-        const response = await fetch(`/api/user/1`);
+        const response = await fetch(`/api/padreFamilia?userId=${session.user.id}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch user data.");
