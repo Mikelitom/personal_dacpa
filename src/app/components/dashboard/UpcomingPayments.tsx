@@ -5,11 +5,14 @@ import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { AlertCircle, CreditCard } from "lucide-react";
-import { Student, NextPayment } from "@/app/types/user";
+import { Database } from "@/app/lib/types";
+
+type Alumno = Database['public']['Tables']['Alumno']['Row']
+type PagoColegiatura = Database['public']['Tables']['PagoColegiatura']['Row']
 
 interface UpcomingPaymentsProps {
-  students: Student[];
-  nextPayment: NextPayment;
+  students: Alumno[];
+  nextPayment: () => Promise<PagoColegiatura | []>;
 }
 
 export function UpcomingPayments({ students, nextPayment }: UpcomingPaymentsProps) {

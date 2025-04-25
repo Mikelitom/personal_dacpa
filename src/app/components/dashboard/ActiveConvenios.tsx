@@ -2,15 +2,50 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { CheckCircle } from "lucide-react";
-import { Student } from "@/app/types/user";
+import { Database } from "@/app/lib/types";
+import { useEffect, useState } from "react";
+
+type Alumno = Database['public']['Tables']['Alumno']['Row']
+type Convenio = Database['public']['Tables']['Convenio']['Row']
 
 interface ActiveConveniosProps {
-  students: Student[];
+  students: Alumno[];
 }
 
 export function ActiveConvenios({ students }: ActiveConveniosProps) {
-  const studentsWithConvenio = students.filter((student) => student.hasConvenio);
+  const studentsWithConvenio = students.filter((student) => student.convenio);
   const hasConvenios = studentsWithConvenio.length > 0;
+  const [ convenios, setConvenios ] = useState<Record<string, Convenio>>({})
+
+  const fetchConvenioById = async (idAlumno: number) => {
+    try {
+      const response = await fetch(`/api/convenios/${idAlumno}/by_id`)
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch convenio')        
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error: ', error)
+    } 
+  }
+
+  useEffect(() => {
+    async function loadConvenios() {
+      for (const alumno of studentsWithConvenio) {
+        const convenio = await fetchConvenioById(alumno.id_alumno);
+
+        if (convenio) {
+          setConvenios(prev => ({
+            ...prev,
+            [alumno.id_alumno]: convenio
+          }))
+        }
+      }
+    }
+  })
 
   return (
     <Card className="border-gray-200 shadow-md">
@@ -23,7 +58,7 @@ export function ActiveConvenios({ students }: ActiveConveniosProps) {
         {hasConvenios ? (
           <div className="space-y-4">
             {studentsWithConvenio.map((student) => (
-              <ConvenioItem key={student.id} student={student} />
+              <ConvenioItem key={student.id_alumno} student={student} convenio={convenios[student.id_alumno]}/>
             ))}
             <div className="text-sm text-gray-500 mt-2">
               Los convenios se renuevan cada ciclo escolar. Para más
@@ -41,28 +76,31 @@ export function ActiveConvenios({ students }: ActiveConveniosProps) {
 }
 
 interface ConvenioItemProps {
-  student: Student;
+  student: Alumno;
+  convenio: Convenio
 }
 
-function ConvenioItem({ student }: ConvenioItemProps) {
+function ConvenioItem({ student, convenio }: ConvenioItemProps) {
   return (
     <div className="p-3 bg-pink-50 rounded-lg border border-pink-100">
       <div className="flex items-start">
         <CheckCircle className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />
         <div>
-          <h4 className="font-medium text-gray-800">{student.name}</h4>
-          <p className="text-gray-600 text-sm">{student.convenioType}</p>
+          <h4 className="font-medium text-gray-800">{student.nombre}</h4>
+          <p className="text-gray-600 text-sm">{convenio.id_convenio}</p>
           <div className="mt-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Colegiatura regular:</span>
               <span className="text-gray-700 line-through">
-                ${student.colegiaturaRegular?.toFixed(2)}
+                1500.00
               </span>
             </div>
             <div className="flex justify-between font-medium">
               <span className="text-gray-500">Colegiatura con convenio:</span>
               <span className="text-pink-600">
-                ${student.colegiaturaConvenio?.toFixed(2)}
+                ${
+                  1500 + (1500 * convenio.porcentaje_incremento)
+                }
               </span>
             </div>
           </div>

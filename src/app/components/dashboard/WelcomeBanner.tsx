@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { User } from '@/app/types/user';
-import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
+import { Database } from '@/app/lib/types';
+
+type Usuario = Database['public']['Tables']['Usuario']['Row']
 
 interface WelcomeBannerProps {
-  user?: User;
+  user?: Usuario;
 }
 
 export function WelcomeBanner({ user }: WelcomeBannerProps) {
@@ -43,16 +43,16 @@ export function WelcomeBanner({ user }: WelcomeBannerProps) {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
-            {greeting}, {user.name || 'Usuario'}
+            {greeting}, {user.nombre_completo || 'Usuario'}
           </h1>
           <p className="text-gray-600 mt-1">Gestiona colegiaturas, uniformes y libros en un solo lugar.</p>
           <p className="text-gray-600 mt-1">
             {currentTime}
           </p>
         </div>
-        <div className="mt-4 md:mt-0">
+        {/* <div className="mt-4 md:mt-0">
           <p className="text-gray-600">Total estudiantes: <span className="font-medium">{user.students?.length || 0}</span></p>
-        </div>
+        </div> */}
       </div>
     </div>
   )
