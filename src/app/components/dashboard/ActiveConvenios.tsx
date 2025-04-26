@@ -45,6 +45,8 @@ export function ActiveConvenios({ students }: ActiveConveniosProps) {
         }
       }
     }
+
+    loadConvenios();
   })
 
   return (
@@ -87,7 +89,7 @@ function ConvenioItem({ student, convenio }: ConvenioItemProps) {
         <CheckCircle className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />
         <div>
           <h4 className="font-medium text-gray-800">{student.nombre}</h4>
-          <p className="text-gray-600 text-sm">{convenio.id_convenio}</p>
+          <p className="text-gray-600 text-sm">{convenio?.id_convenio}</p>
           <div className="mt-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Colegiatura regular:</span>
@@ -99,7 +101,7 @@ function ConvenioItem({ student, convenio }: ConvenioItemProps) {
               <span className="text-gray-500">Colegiatura con convenio:</span>
               <span className="text-pink-600">
                 ${
-                  1500 + (1500 * convenio.porcentaje_incremento)
+                  1500 + ((1500 * convenio?.porcentaje_incremento)/100)
                 }
               </span>
             </div>

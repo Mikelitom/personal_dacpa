@@ -213,7 +213,7 @@ export const userService = {
      
     return data || [];
   },
-  async getSiguientesPagoAlumno(id: string): Promise<PagoColegiatura[]> {
+  async getSiguientePagoAlumno(id: string): Promise<PagoColegiatura> {
     const today = new Date().toISOString();
 
     const { data, error } = await supabase
@@ -221,6 +221,23 @@ export const userService = {
       .select('*')
       .eq('id_alumno', id)
       .gt('fecha_pago', today)
+      .order('fecha_pago', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      
+    if (error) throw new Error(`[dbService] Error fetching next payments.`)
+    
+    return data || null;
+  },
+  async getSiguientesPagosAlumno(id: string): Promise<PagoColegiatura> {
+    const today = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from('PagoColegiatura')
+      .select('*')
+      .eq('id_alumno', id)
+      .gt('fecha_pago', today)
+      .order('fecha_pago', { ascending: true })
       .maybeSingle()
       
     if (error) throw new Error(`[dbService] Error fetching next payments.`)
