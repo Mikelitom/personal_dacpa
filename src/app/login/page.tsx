@@ -14,15 +14,15 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: correo,
         password: contraseña
       });
-
+  
       if (authError) throw authError;
-
+  
       const { data: userData, error: userError } = await supabase
         .from('Usuario')
         .select('rol, nombre_completo, estado')
@@ -30,21 +30,23 @@ export default function Login() {
         .single();
         
       if (userError) throw userError;
-
+  
       if (userData.estado !== 'activo') {
-        throw new Error('Tu cuenta esta inactiva. Contacta al administrador.');
+        throw new Error('Tu cuenta está inactiva. Contacta al administrador.');
       }
-
+  
+      // Redirigir forzando reload completo para que el middleware vea las cookies nuevas
       const dashboardUrl = userData.rol === 'admin' ? '/dashboard-admin' : '/dashboard';
-      router.push(dashboardUrl);
-      router.refresh();
-
+      window.location.href = dashboardUrl;
+  
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesion');
+      setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
   }
+  
+  
 
   return (
     <div className="flex h-screen w-full bg-gradient-to-br from-purple-50 to-purple-100">

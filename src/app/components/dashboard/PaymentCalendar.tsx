@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Calendar } from "lucide-react";
-import { PaymentDate } from "@/app/types/user";
 import { Database } from "@/app/lib/types";
 
 type PagoColegiatura = Database['public']['Tables']['PagoColegiatura']['Row']
@@ -20,43 +19,40 @@ interface DetailedDate {
 }
 
 export function PaymentCalendar({ payments }: PaymentCalendarProps) {
+  // Estado para controlar hidratación
+  const [isClient, setIsClient] = useState(false);
+  // Estados para controlar el mes y año actual del calendario
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  // Estado para almacenar la estructura del calendario
+  const [calendarDays, setCalendarDays] = useState<Array<Array<{ day: number; isCurrentMonth: boolean; type?: string }>>>([]);
+
   function convertDate(data: PagoColegiatura): DetailedDate {
     const fechaPago = new Date(data.fecha_pago)
 
     return {
       day: fechaPago.getDate(),
-      month: fechaPago.getMonth(),
+      month: fechaPago.getMonth() + 1, // JavaScript months are 0-indexed
       year: fechaPago.getFullYear(),
       type: data.concepto || "Pago",
       description: `${data.metodo_pago || "Pago"} - ${data.monto || "0"} - ${data.estado || "N/A"}`
     }
   }
 
-  const dates = () => {
-    const detailedDates: DetailedDate[] = payments.map(item => convertDate(item));
-    
-    return detailedDates;
-  }
+  // Usando useMemo para calcular las fechas de pago una sola vez cuando cambian los pagos
+  const paymentDates = useMemo(() => {
+    return payments.map(item => convertDate(item));
+  }, [payments]);
 
-  const paymentDates = dates();
-
-  // Estado para controlar hidratación
-  const [isClient, setIsClient] = useState(false);
-  // Estados para controlar el mes y año actual del calendario
-  const [currentMonth, setCurrentMonth] = useState(0);
-  const [currentYear, setCurrentYear] = useState(0);
-  // Estado para almacenar la estructura del calendario
-  const [calendarDays, setCalendarDays] = useState<Array<Array<{ day: number; isCurrentMonth: boolean; type?: string }>>>([]);
-
-  // Activamos los cálculos solo en el cliente
+  // Activamos la hidratación del componente solo en el cliente
   useEffect(() => {
-    const now = new Date();
-    setCurrentMonth(now.getMonth());
-    setCurrentYear(now.getFullYear());
     setIsClient(true);
+    // Inicializamos los valores del mes y año al cargar el componente
+    setCurrentMonth(new Date().getMonth());
+    setCurrentYear(new Date().getFullYear());
   }, []);
 
-  // Generar el calendario cada vez que cambia el mes o año
+  // Generamos el calendario cuando cambia el mes o el año
   useEffect(() => {
     if (isClient) {
       generateCalendarDays(currentMonth, currentYear);
