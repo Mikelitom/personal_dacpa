@@ -81,7 +81,7 @@ export function UpcomingPayments({ students }: UpcomingPaymentsProps) {
 
     loadPagos();
     loadConvenios();
-  })
+  }, [students])
 
   return (
     <Card className="border-gray-200 shadow-md">

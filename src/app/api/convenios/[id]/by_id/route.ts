@@ -3,10 +3,10 @@ import { userService } from '@/app/services/dbService'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const alumnoId = params.id;
+    const alumnoId = (await params).id; // ✅ aquí ya está bien
     const convenio = await userService.getConvenioByIdAlumno(alumnoId);
     return NextResponse.json(convenio);
   } catch (error) {
