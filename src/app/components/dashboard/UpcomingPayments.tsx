@@ -6,16 +6,83 @@ import { Badge } from "@/app/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { AlertCircle, CreditCard } from "lucide-react";
 import { Database } from "@/app/lib/types";
+import { useEffect, useState } from 'react'
 
 type Alumno = Database['public']['Tables']['Alumno']['Row']
 type PagoColegiatura = Database['public']['Tables']['PagoColegiatura']['Row']
+type Convenio = Database['public']['Tables']['Convenio']['Row']
 
 interface UpcomingPaymentsProps {
   students: Alumno[];
-  nextPayment: () => Promise<PagoColegiatura | []>;
 }
 
-export function UpcomingPayments({ students, nextPayment }: UpcomingPaymentsProps) {
+export function UpcomingPayments({ students }: UpcomingPaymentsProps) {
+  const studentsWithConvenio = students.filter((student) => student.convenio);
+  const [ convenios, setConvenios ] = useState<Record<string, Convenio>>({})
+  const [ pagos, setPagos ] = useState<Record<string, PagoColegiatura>>({})
+
+  const fetchPagoById = async (idAlumno: number) => {
+    try {
+      const response = await fetch(`/api/pago-colegiatura/${idAlumno}/by_id`)
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch pagos')        
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error: ', error)
+    } 
+  }
+
+
+  const fetchConvenioById = async (idAlumno: number) => {
+    try {
+      const response = await fetch(`/api/convenios/${idAlumno}/by_id`)
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch convenio')        
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error: ', error)
+    } 
+  }
+
+  useEffect(() => {
+    async function loadConvenios() {
+      for (const alumno of studentsWithConvenio) {
+        const convenio = await fetchConvenioById(alumno.id_alumno);
+
+        if (convenio) {
+          setConvenios(prev => ({
+            ...prev,
+            [alumno.id_alumno]: convenio
+          }))
+        }
+      }
+    }
+
+    async function loadPagos() {
+      for (const alumno of students) {
+        const pago = await fetchPagoById(alumno.id_alumno);
+  
+        if (pago) {
+          setPagos(prev => ({
+            ...prev,
+            [alumno.id_alumno]: pago
+          }))
+        }
+      }
+    }
+
+    loadPagos();
+    loadConvenios();
+  })
+
   return (
     <Card className="border-gray-200 shadow-md">
       <CardHeader className="pb-2 border-b border-gray-100">
@@ -26,16 +93,19 @@ export function UpcomingPayments({ students, nextPayment }: UpcomingPaymentsProp
       </CardHeader>
       <CardContent className="p-4">
         <div className="space-y-3">
-          {students.map((student) => (
-            <PaymentItem 
-              key={student.id} 
+          {
+            students.map((student) => (
+              <PaymentItem 
+              key={student.id_alumno} 
               student={student} 
               date="10/05/2024" 
               month="Mayo 2024" 
               status="Pendiente"
-              amount={student.hasConvenio && student.colegiaturaConvenio ? student.colegiaturaConvenio : 2000}
+              amount={student.convenio && convenios[student.id_alumno]?.porcentaje_incremento ? (pagos[student.id_alumno].monto * convenios[student.id_alumno]?.porcentaje_incremento) : 1500}
             />
-          ))}
+            ))
+          }
+
 
           <div className="p-3 border border-gray-200 rounded-lg bg-white">
             <div className="flex justify-between items-center">
@@ -73,7 +143,7 @@ export function UpcomingPayments({ students, nextPayment }: UpcomingPaymentsProp
 }
 
 interface PaymentItemProps {
-  student: Student;
+  student: Alumno;
   date: string;
   month: string;
   status: string;
@@ -93,7 +163,7 @@ function PaymentItem({ student, date, month, status, amount }: PaymentItemProps)
         </Badge>
       </div>
       <div className="mt-2 flex justify-between items-center">
-        <span className="text-sm text-gray-500">{student.name} ({student.grade})</span>
+        <span className="text-sm text-gray-500">{student.nombre} ({student.grado})</span>
         <span className="font-medium text-pink-600">${amount.toFixed(2)}</span>
       </div>
     </div>

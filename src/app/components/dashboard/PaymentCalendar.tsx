@@ -4,12 +4,42 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Calendar } from "lucide-react";
 import { PaymentDate } from "@/app/types/user";
+import { Database } from "@/app/lib/types";
 
+type PagoColegiatura = Database['public']['Tables']['PagoColegiatura']['Row']
 interface PaymentCalendarProps {
-  paymentDates: PaymentDate[];
+  payments: PagoColegiatura[];
 }
 
-export function PaymentCalendar({ paymentDates = [] }: PaymentCalendarProps) {
+interface DetailedDate {
+  day: number,
+  month: number,
+  year: number,
+  type: string,
+  description: string
+}
+
+export function PaymentCalendar({ payments }: PaymentCalendarProps) {
+  function convertDate(data: PagoColegiatura): DetailedDate {
+    const fechaPago = new Date(data.fecha_pago)
+
+    return {
+      day: fechaPago.getDate(),
+      month: fechaPago.getMonth(),
+      year: fechaPago.getFullYear(),
+      type: data.concepto || "Pago",
+      description: `${data.metodo_pago || "Pago"} - ${data.monto || "0"} - ${data.estado || "N/A"}`
+    }
+  }
+
+  const dates = () => {
+    const detailedDates: DetailedDate[] = payments.map(item => convertDate(item));
+    
+    return detailedDates;
+  }
+
+  const paymentDates = dates();
+
   // Estado para controlar hidratación
   const [isClient, setIsClient] = useState(false);
   // Estados para controlar el mes y año actual del calendario
