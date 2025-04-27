@@ -1,36 +1,42 @@
-// src/components/perfil/PerfilLayout.tsx
+// src/components/perfil/ProfileLayout.tsx
 "use client"
 
 import { Dispatch, SetStateAction } from "react"
-import { TutelaryData, StudentData } from "@/app/types/profile"
 import { SidePanel } from "./SidePanel"
 import { InfoPersonal } from "./tabs/InfoPersonal"
 import { Estudiantes } from "./tabs/Estudiantes"
 import { HistorialPagos } from './tabs/HistorialPagos'
 import { Convenios } from "./tabs/Convenios"
 import { Documentos } from "./tabs/Documentos"
+import { Database } from "@/app/lib/types"
 
-interface PerfilLayoutProps {
-  tutelaryData: TutelaryData;
-  setTutelaryData: Dispatch<SetStateAction<TutelaryData>>;
-  studentsData: StudentData[];
+type PadreFamilia = Database['public']['Tables']['PadreFamilia']['Row']
+type Usuario = Database['public']['Tables']['Usuario']['Row']
+type Alumno = Database['public']['Tables']['Alumno']['Row']
+
+interface ProfileLayoutProps {
+  usuarioData: Usuario;
+  padreData: PadreFamilia;
+  updateProfile: (nuevoUsuario: Usuario, nuevoPadre: PadreFamilia) => Promise<void>;
+  alumnosData: Alumno[];
   activeTab: string;
   setActiveTab: Dispatch<SetStateAction<string>>;
 }
 
 export function ProfileLayout({ 
-  tutelaryData, 
-  setTutelaryData, 
-  studentsData, 
+  usuarioData,
+  padreData, 
+  updateProfile, 
+  alumnosData, 
   activeTab, 
   setActiveTab 
-}: PerfilLayoutProps) {
+}: ProfileLayoutProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Panel izquierdo - Información del padre */}
       <div className="lg:col-span-1">
         <SidePanel 
-          nombre={tutelaryData.nombre} 
+          nombre={padreData.nombre || usuarioData.nombre_completo} 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
         />
@@ -40,21 +46,22 @@ export function ProfileLayout({
       <div className="lg:col-span-3">
         {activeTab === "info" && (
           <InfoPersonal 
-            padreData={tutelaryData} 
-            setPadreData={setTutelaryData} 
+            usuarioData={usuarioData} 
+            padreData={padreData} 
+            updateProfile={updateProfile} 
           />
         )}
 
         {activeTab === "estudiantes" && (
-          <Estudiantes hijosData={studentsData} />
+          <Estudiantes hijosData={alumnosData} />
         )}
 
         {activeTab === "pagos" && (
-          <HistorialPagos hijosData={studentsData} />
+          <HistorialPagos hijosData={alumnosData} />
         )}
 
         {activeTab === "convenios" && (
-          <Convenios hijosData={studentsData} />
+          <Convenios hijosData={alumnosData} />
         )}
 
         {activeTab === "documentos" && (

@@ -3,10 +3,10 @@ import { userService } from '@/app/services/dbService'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const parentId = params.id;
+    const parentId = (await params).id;
 
     const alumnos = await userService.getAlumnoByParentId(parentId);
 

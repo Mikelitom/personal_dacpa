@@ -43,6 +43,12 @@ export type Database = {
           ingreso_economico: string;
           escolaridad: string;
           ocupacion: string;
+          nombre: string;
+          edad: number; 
+          celular: string;
+          telefono_oficina: string;
+          ciudad: string;
+          codigo_postal: string
         };
         Insert: {
           id_padre: number;
@@ -50,6 +56,12 @@ export type Database = {
           ingreso_economico?: string;
           escolaridad?: string;
           ocupacion?: string;
+          nombre?: string;
+          edad?: number; 
+          celular?: string;
+          telefono_oficina?: string;
+          ciudad?: string;
+          codigo_postal?: string
         };
         Update: {
           id_padre?: number;
@@ -57,6 +69,12 @@ export type Database = {
           ingreso_economico?: string;
           escolaridad?: string;
           ocupacion?: string;
+          nombre?: string;
+          edad?: number; 
+          celular?: string;
+          telefono_oficina?: string;
+          ciudad?: string;
+          codigo_postal?: string
         };
       };
       HistoriaDesarrollo: {
