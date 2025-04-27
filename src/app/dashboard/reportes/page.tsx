@@ -1,19 +1,28 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card"
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle
+} from "@/app/components/ui/card"
 import { Button } from "@/app/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/app/components/ui/select"
 import { DatePicker } from "@/app/components/ui/date-picker"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
-import { Download, FileText, ShoppingBag, Calendar, Printer } from "lucide-react"
+import {
+  Tabs, TabsContent, TabsList, TabsTrigger
+} from "@/app/components/ui/tabs"
+import {
+  Download, FileText, ShoppingBag, Calendar, Printer
+} from "lucide-react"
 
 export default function ReportesPage() {
   const [estudiante, setEstudiante] = useState<string>("")
   const [fechaInicio, setFechaInicio] = useState<Date>()
   const [fechaFin, setFechaFin] = useState<Date>()
+  const [tipo, setTipo] = useState('estadoCuenta')
+  const [estudianteId, setEstudianteId] = useState('todos')
 
-  // Datos de ejemplo
   const estudiantes = [
     { id: "est1", nombre: "Ana Pérez González", grado: "1°A" },
     { id: "est2", nombre: "Carlos Pérez González", grado: "3°B" },
@@ -21,24 +30,82 @@ export default function ReportesPage() {
 
   const reportes = [
     {
-      id: "rep1",
+      id: "estadoCuenta",
       nombre: "Estado de Cuenta",
       descripcion: "Reporte detallado de todos los movimientos financieros",
       icono: <FileText className="h-8 w-8" />,
     },
     {
-      id: "rep2",
+      id: "pagosColegiatura",
       nombre: "Pagos de Colegiatura",
       descripcion: "Historial de pagos de colegiatura realizados",
       icono: <Calendar className="h-8 w-8" />,
     },
     {
-      id: "rep3",
+      id: "comprasProductos",
       nombre: "Compras de Productos",
       descripcion: "Detalle de compras de uniformes y libros",
       icono: <ShoppingBag className="h-8 w-8" />,
     },
   ]
+
+  const handleGenerarPDF = (tipoReporte: string, accion: 'descargar' | 'imprimir') => {
+    if (!fechaInicio || !fechaFin) {
+      alert("Selecciona el rango de fechas.")
+      return
+    }
+
+    setTipo(tipoReporte)
+
+    const url = `/api/generar-pdf?tipo=${tipoReporte}&estudianteId=${estudiante || 'todos'}&fechaInicio=${fechaInicio.toISOString()}&fechaFin=${fechaFin.toISOString()}`
+
+    if (accion === 'imprimir') {
+      // Abrir en nueva pestaña e imprimir
+      const ventanaImpresion = window.open(url, "_blank")
+      if (ventanaImpresion) {
+        ventanaImpresion.onload = function() {
+          setTimeout(() => {
+            ventanaImpresion.print()
+          }, 1000)
+        }
+      }
+    } else {
+      // Descargar automáticamente
+      fetch(url)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const link = document.createElement("a")
+          const href = window.URL.createObjectURL(blob)
+          
+          // Obtener el nombre descriptivo del reporte
+          let nombreReporte = "reporte"
+          if (tipoReporte === "estadoCuenta") nombreReporte = "EstadoDeCuenta"
+          else if (tipoReporte === "pagosColegiatura") nombreReporte = "PagosColegiatura"
+          else if (tipoReporte === "comprasProductos") nombreReporte = "ComprasProductos"
+          
+          // Obtener el nombre del estudiante seleccionado
+          let nombreEstudiante = "Todos"
+          if (estudiante) {
+            const estSeleccionado = estudiantes.find(est => est.id === estudiante)
+            if (estSeleccionado) {
+              nombreEstudiante = estSeleccionado.nombre.replace(/\s+/g, '-')
+            }
+          }
+          
+          // Crear nombre de archivo descriptivo
+          link.href = href
+          link.download = `${estudiante || 'todos'}-${nombreEstudiante}-${nombreReporte}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(href)
+        })
+        .catch(error => {
+          console.error("Error al descargar el PDF:", error)
+          alert("Ocurrió un error al generar el reporte")
+        })
+    }
+  }
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -60,7 +127,7 @@ export default function ReportesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Estudiante</label>
-                  <Select value={estudiante} onValueChange={setEstudiante}>
+                  <Select value={estudiante} onValueChange={(value) => setEstudiante(value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar estudiante" />
                     </SelectTrigger>
@@ -93,15 +160,24 @@ export default function ReportesPage() {
               <Card key={reporte.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex flex-col items-center text-center">
-                    <div className="mb-4 p-3 bg-blue-50 text-blue-600 rounded-full">{reporte.icono}</div>
+                    <div className="mb-4 p-3 bg-blue-50 text-blue-600 rounded-full">
+                      {reporte.icono}
+                    </div>
                     <h3 className="text-lg font-semibold mb-2">{reporte.nombre}</h3>
                     <p className="text-gray-500 text-sm mb-6">{reporte.descripcion}</p>
                     <div className="flex gap-2 mt-auto">
-                      <Button variant="outline" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => handleGenerarPDF(reporte.id, 'imprimir')}
+                      >
                         <Printer className="mr-2 h-4 w-4" />
                         Imprimir
                       </Button>
-                      <Button className="flex-1">
+                      <Button 
+                        className="flex-1" 
+                        onClick={() => handleGenerarPDF(reporte.id, 'descargar')}
+                      >
                         <Download className="mr-2 h-4 w-4" />
                         Descargar
                       </Button>
@@ -128,47 +204,30 @@ export default function ReportesPage() {
                         <th className="p-3 border-b">Fecha</th>
                         <th className="p-3 border-b">Tipo de Reporte</th>
                         <th className="p-3 border-b">Estudiante</th>
-                        <th className="p-3 border-b">Periodo</th>
+                      
                         <th className="p-3 border-b">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      <tr className="border-b hover:bg-gray-50">
-                        <td className="p-3">05/04/2024</td>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {/* Aquí puedes mapear los reportes anteriores desde una API o estado */}
+                      <tr>
+                        <td className="p-3">2025-04-01</td>
                         <td className="p-3">Estado de Cuenta</td>
                         <td className="p-3">Ana Pérez González</td>
-                        <td className="p-3">Enero - Abril 2024</td>
                         <td className="p-3">
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4 mr-1" />
-                            PDF
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm">
+                              <Download className="w-4 h-4 mr-1" />
+                              Descargar
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Printer className="w-4 h-4 mr-1" />
+                              Imprimir
+                            </Button>
+                          </div>
                         </td>
                       </tr>
-                      <tr className="border-b hover:bg-gray-50">
-                        <td className="p-3">01/04/2024</td>
-                        <td className="p-3">Pagos de Colegiatura</td>
-                        <td className="p-3">Carlos Pérez González</td>
-                        <td className="p-3">Enero - Marzo 2024</td>
-                        <td className="p-3">
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4 mr-1" />
-                            PDF
-                          </Button>
-                        </td>
-                      </tr>
-                      <tr className="border-b hover:bg-gray-50">
-                        <td className="p-3">15/02/2024</td>
-                        <td className="p-3">Compras de Productos</td>
-                        <td className="p-3">Todos los estudiantes</td>
-                        <td className="p-3">Enero - Febrero 2024</td>
-                        <td className="p-3">
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4 mr-1" />
-                            PDF
-                          </Button>
-                        </td>
-                      </tr>
+                      {/* Repite más filas según sea necesario */}
                     </tbody>
                   </table>
                 </div>
@@ -180,3 +239,4 @@ export default function ReportesPage() {
     </div>
   )
 }
+              
