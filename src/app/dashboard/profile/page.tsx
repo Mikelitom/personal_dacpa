@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { ProfileLayout } from "@/app/components/profile/ProfileLayout"
 import { Database } from "@/app/lib/types"
 import { supabase } from "@/app/lib/supabase"
+import { User } from "@supabase/supabase-js"
 
 type PadreFamilia = Database['public']['Tables']['PadreFamilia']['Row']
 type Usuario = Database['public']['Tables']['Usuario']['Row']
@@ -16,20 +17,28 @@ export default function PerfilPage() {
   const [alumnos, setAlumnos] = useState<Alumno[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("info")
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<User | null>(null)
 
   useEffect(() => {
+    console.log('[Debug] Inicio fetch de usuario')
     const getSession = async () => {
       const { data } = await supabase.auth.getUser()
+      console.log(data)
       setSession(data?.user)
+      console.log('[Debug] Sesion obtenida: ', session)
     }
 
     getSession()
   }, [])
 
   useEffect(() => {
+    console.log('[Debug] Sesion actualizada: ', session)
+  }, [session])
+
+  useEffect(() => {
     const fetchData = async () => {
-      if (!session.mail) return;
+      
+      if (!session?.email) return;
       try {
         
         // Obtener datos del usuario actual
@@ -37,7 +46,8 @@ export default function PerfilPage() {
         const userResponse = await fetch(`/api/usuario/${email}/usuario`)
         const userData = await userResponse.json()
         setUsuario(userData)
-
+        console.log('[Debug] User actualizada: ', userData)
+        
         // Obtener datos del padre usando el id_padre del usuario
         const padreResponse = await fetch(`/api/padre-familia/${userData.id_padre}`)
         const padreData = await padreResponse.json()
@@ -56,7 +66,7 @@ export default function PerfilPage() {
     }
 
     fetchData()
-  }, [])
+  }, [session])
 
   const updateProfile = async (nuevoUsuario: Usuario, nuevoPadre: PadreFamilia) => {
     try {

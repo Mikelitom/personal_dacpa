@@ -1,5 +1,6 @@
 import { supabase, createServerSupabaseClient } from '@/app/lib/supabase';
 import { Database } from '@/app/lib/types';
+import { id } from 'date-fns/locale';
 
 type Usuario = Database['public']['Tables']['Usuario']['Row'];
 type PadreFamilia = Database['public']['Tables']['PadreFamilia']['Row'];
@@ -212,6 +213,18 @@ export const userService = {
     if (error) throw new Error(`[dbService] Error fetching Reportes. ${error.message}`)
      
     return data || [];
+  },
+  async getAllPagadosByAlumno(id: string): Promise<PagoColegiatura[]> {
+    const { data, error } = await supabase
+      .from('PagoColegiatura')
+      .select('*')
+      .eq('id_alumno', id)
+      .eq('estado', 'pagado')
+      .maybeSingle()
+
+    if (error) throw new Error('[dbService] Error fetching paid payments.')
+
+    return data || []
   },
   async getSiguientePagoAlumno(id: string): Promise<PagoColegiatura> {
     const today = new Date().toISOString();

@@ -66,13 +66,6 @@ export function SidePanel({ nombre, activeTab, setActiveTab }: SidePanelProps) {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
-          <NavButton 
-            icon={<FileText className="mr-2 h-4 w-4" />}
-            label="Documentos"
-            tabId="documentos"
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
         </nav>
       </CardContent>
     </Card>

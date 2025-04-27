@@ -73,6 +73,7 @@ export default function DashboardPage() {
         const usuarioData = await usuarioResponse.json()
         console.log("[DEBUG] Datos de usuario recibidos:", usuarioData)
         setUsuario(usuarioData)
+        console.log(usuario)
 
         // 2. Si hay id_padre, obtener alumnos
         if (usuarioData.id_padre) {

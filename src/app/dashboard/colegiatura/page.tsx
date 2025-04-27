@@ -1,75 +1,26 @@
-"use client" // Indica que este componente se ejecuta en el lado del cliente
+"use client"
 
-import { SetStateAction, useState } from "react"; // Importa el hook useState de React
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"; // Importa componentes de tarjeta
-import { Button } from "@/app/components/ui/button"; // Importa el componente de botón
-import { Input } from "@/app/components/ui/input"; // Importa el componente de entrada
-import { Label } from "@/app/components/ui/label"; // Importa el componente de etiqueta
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"; // Importa componentes de selección
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"; // Importa componentes de pestañas
-import { CreditCard, CheckCircle2, DollarSign, AlertCircle, Clock, Calendar, Search, Receipt, Building2, ChevronUp, ChevronDown } from "lucide-react"; // Importa íconos de lucide-react
-import { createCheckoutSession } from '@/app/actions'
-import { useToast } from '@/app/components/ui/use-toast'
-import { Badge } from "@/app/components/ui/badge";
-import { Checkbox } from "@radix-ui/react-checkbox";
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
+import { Button } from "@/app/components/ui/button"
+import { Label } from "@/app/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { Checkbox } from "@/app/components/ui/checkbox"
+import { Badge } from "@/app/components/ui/badge"
+import { Calendar, AlertCircle, DollarSign, CheckCircle2, Clock, Search, Printer } from "lucide-react"
+import { Input } from "@/app/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/dialog"
 
-
-// Componente principal para la página de colegiatura
 export default function ColegiaturaPage() {
-  // Estados para manejar la información del formulario
-  const [metodo, setMetodo] = useState("tarjeta"); // Estado para el método de pago
-  const [monto, setMonto] = useState("1500.00"); // Estado para el monto a pagar
-  const [pagando, setPagando] = useState(false); // Estado para indicar si se está procesando el pago
-
-  // const handlePayment = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     const amount = 1500.00
-
-  //     const url = await createCheckoutSession(Number.parseFloat(amount))
-
-  //     if (url) {
-  //       window.location.href = url
-  //     } else {
-  //       throw new Error('No se pudo crear la sesion de pago.')
-  //     }
-  //   } catch (error) {
-  //     console.error('Error al procesar el pago: ', error)
-  //     toast({
-  //       title: 'Error',
-  //       description: 'Ocurrio un error al procesar el pago. Intente nuevamente.',
-  //       variant: 'destructive'
-  //     })
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-
-  // }
-
-  // // Función para manejar el proceso de pago
-  // const handlePagar = () => {
-  //   setPagando(true); // Cambia el estado a "pagando"
-  //   // Simulación de proceso de pago
-  //   setTimeout(() => {
-  //     setPagando(false); // Cambia el estado a "no pagando"
-  //     setPagado(true); // Cambia el estado a "pagado"
-  //     // Resetear después de mostrar confirmación
-  //     setTimeout(() => {
-  //       setPagado(false); // Resetea el estado de "pagado" después de 3 segundos
-  //     }, 3000);
-  //   }, 2000);
-  // };
-
   const [estudiante, setEstudiante] = useState("")
   const [mesesSeleccionados, setMesesSeleccionados] = useState<string[]>([])
-  const [facturar, setFacturar] = useState(false)
-  const [mostrarFacturacion, setMostrarFacturacion] = useState(false)
   const [pagado, setPagado] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState("todos")
   const [filtroEstudiante, setFiltroEstudiante] = useState("todos")
   const [filtroPeriodo, setFiltroPeriodo] = useState("todos")
   const [busqueda, setBusqueda] = useState("")
+  const [ticketDialogOpen, setTicketDialogOpen] = useState(false)
+  const [ticketData, setTicketData] = useState<any>(null)
 
   // Datos de ejemplo
   const estudiantes = [
@@ -78,16 +29,164 @@ export default function ColegiaturaPage() {
   ]
 
   const mesesColegiatura = [
-    { id: "ene", nombre: "Enero", monto: 1500, estado: "pagado", fechaPago: "10/01/2024", incluye: "Libros" },
-    { id: "feb", nombre: "Febrero", monto: 1500, estado: "pagado", fechaPago: "08/02/2024" },
-    { id: "mar", nombre: "Marzo", monto: 1500, estado: "pagado", fechaPago: "12/03/2024", interes: 150 },
-    { id: "abr", nombre: "Abril", monto: 1500, estado: "pagado", fechaPago: "09/04/2024" },
-    { id: "may", nombre: "Mayo", monto: 1500, estado: "pendiente", vencimiento: "10/05/2024" },
-    { id: "ago", nombre: "Agosto", monto: 1500, estado: "pendiente", vencimiento: "10/08/2024" },
-    { id: "sep", nombre: "Septiembre", monto: 1500, estado: "pendiente", vencimiento: "10/09/2024" },
-    { id: "oct", nombre: "Octubre", monto: 1500, estado: "pendiente", vencimiento: "10/10/2024" },
-    { id: "nov", nombre: "Noviembre", monto: 1500, estado: "pendiente", vencimiento: "10/11/2024" },
-    { id: "dic", nombre: "Diciembre", monto: 1500, estado: "pendiente", vencimiento: "10/12/2024" },
+    {
+      id: "ene",
+      nombre: "Enero",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "10/01/2024",
+      incluye: "Libros",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "feb",
+      nombre: "Febrero",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "08/02/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "mar",
+      nombre: "Marzo",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "12/03/2024",
+      interes: 150,
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "abr",
+      nombre: "Abril",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "09/04/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "may",
+      nombre: "Mayo",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/05/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "ago",
+      nombre: "Agosto",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/08/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "sep",
+      nombre: "Septiembre",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/09/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "oct",
+      nombre: "Octubre",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/10/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "nov",
+      nombre: "Noviembre",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/11/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+    {
+      id: "dic",
+      nombre: "Diciembre",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/12/2024",
+      estudiante: "est1",
+      nombreEstudiante: "Ana Pérez González",
+    },
+
+    {
+      id: "ene2",
+      nombre: "Enero",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "10/01/2024",
+      incluye: "Libros",
+      estudiante: "est2",
+      nombreEstudiante: "Carlos Pérez González",
+    },
+    {
+      id: "feb2",
+      nombre: "Febrero",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "08/02/2024",
+      estudiante: "est2",
+      nombreEstudiante: "Carlos Pérez González",
+    },
+    {
+      id: "mar2",
+      nombre: "Marzo",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "12/03/2024",
+      interes: 150,
+      estudiante: "est2",
+      nombreEstudiante: "Carlos Pérez González",
+    },
+    {
+      id: "abr2",
+      nombre: "Abril",
+      monto: 1500,
+      estado: "pagado",
+      fechaPago: "09/04/2024",
+      estudiante: "est2",
+      nombreEstudiante: "Carlos Pérez González",
+    },
+    {
+      id: "may2",
+      nombre: "Mayo",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/05/2024",
+      estudiante: "est2",
+      nombreEstudiante: "Carlos Pérez González",
+    },
+    {
+      id: "ago2",
+      nombre: "Agosto",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/08/2024",
+      estudiante: "est2",
+      nombreEstudiante: "Carlos Pérez González",
+    },
+    {
+      id: "sep2",
+      nombre: "Septiembre",
+      monto: 1500,
+      estado: "pendiente",
+      vencimiento: "10/09/2024",
+      estudiante: "est2",
+      nombreEstudiante: "Carlos Pérez González",
+    },
   ]
 
   const convenios = [
@@ -101,15 +200,67 @@ export default function ColegiaturaPage() {
     },
   ]
 
+  // Calcular estadísticas al cargar o cuando cambian los filtros
+  useEffect(() => {
+    // Si se selecciona un estudiante específico, establecer el estado estudiante para el pago
+    if (filtroEstudiante !== "todos" && filtroEstudiante !== "") {
+      setEstudiante(filtroEstudiante)
+    }
+  }, [filtroEstudiante])
+
   const handlePagoExitoso = () => {
-    setPagado(true)
+    // Crear datos del ticket
+    const estudianteInfo = estudiantes.find((est) => est.id === estudiante)
+    const mesesInfo = mesesSeleccionados
+      .map((mesId) => {
+        const mes = mesesColegiatura.find((m) => m.id === mesId)
+        return mes
+      })
+      .filter(Boolean)
+
+    const ticketInfo = {
+      fecha: new Date().toLocaleDateString(),
+      estudiante: estudianteInfo?.nombre || "",
+      grado: estudianteInfo?.grado || "",
+      meses: mesesInfo,
+      total: calcularTotal(),
+      ticket: TICK-${Date.now().toString().slice(-6)},
+      colegio: "Colegio Ejemplo",
+      direccion: "Av. Principal #123, Ciudad",
+      telefono: "555-123-4567",
+    }
+
+    setTicketData(ticketInfo)
+    setTicketDialogOpen(true)
+
     // Resetear después de mostrar confirmación
     setTimeout(() => {
-      setPagado(false)
-    }, 5000)
+      setPagado(true)
+    }, 500)
   }
 
   const toggleMesSeleccionado = (mesId: string) => {
+    const mes = mesesColegiatura.find((m) => m.id === mesId)
+
+    // Si ya hay meses seleccionados, verificar que sean del mismo estudiante
+    if (mesesSeleccionados.length > 0) {
+      const primerMesId = mesesSeleccionados[0]
+      const primerMes = mesesColegiatura.find((m) => m.id === primerMesId)
+
+      if (primerMes && mes && primerMes.estudiante !== mes.estudiante) {
+        alert("No se pueden mezclar colegiaturas de diferentes estudiantes en un mismo pago.")
+        return
+      }
+
+      // Establecer el estudiante automáticamente
+      if (mes && !estudiante) {
+        setEstudiante(mes.estudiante)
+      }
+    } else if (mes) {
+      // Si es el primer mes seleccionado, establecer el estudiante
+      setEstudiante(mes.estudiante)
+    }
+
     if (mesesSeleccionados.includes(mesId)) {
       setMesesSeleccionados(mesesSeleccionados.filter((id) => id !== mesId))
     } else {
@@ -117,13 +268,22 @@ export default function ColegiaturaPage() {
     }
   }
 
+  // Modificar la función calcularTotal para incluir el interés automáticamente para meses vencidos
   const calcularTotal = () => {
     let total = 0
     mesesSeleccionados.forEach((mesId) => {
       const mes = mesesColegiatura.find((m) => m.id === mesId)
       if (mes) {
         total += mes.monto
-        if (mes.interes) total += mes.interes
+        // Si ya tiene interés definido, usarlo
+        if (mes.interes) {
+          total += mes.interes
+        }
+        // Si está vencido pero no tiene interés definido, calcularlo
+        else if (mes.estado === "pendiente" && estaVencido(mes.vencimiento || "")) {
+          const interes = mes.monto * 0.1 // 10% de interés
+          total += interes
+        }
       }
     })
     return total
@@ -159,20 +319,38 @@ export default function ColegiaturaPage() {
   }
 
   // Filtrar meses según los criterios seleccionados
-  const mesesFiltrados = mesesColegiatura.filter((mes) => {
-    // Filtro por estado
-    if (filtroEstado !== "todos" && mes.estado !== filtroEstado) return false
+  const filtrarMeses = () => {
+    return mesesColegiatura.filter((mes) => {
+      // Filtro por búsqueda
+      if (busqueda) {
+        const searchLower = busqueda.toLowerCase()
+        const matchesNombre = mes.nombre.toLowerCase().includes(searchLower)
+        const matchesEstudiante = mes.nombreEstudiante.toLowerCase().includes(searchLower)
+        if (!matchesNombre && !matchesEstudiante) return false
+      }
 
-    // Filtro por periodo
-    if (filtroPeriodo === "verano" && (mes.id === "jun" || mes.id === "jul")) return true
-    if (filtroPeriodo === "regular" && mes.id !== "jun" && mes.id !== "jul") return true
-    if (filtroPeriodo !== "todos" && filtroPeriodo !== "verano" && filtroPeriodo !== "regular") return false
+      // Filtro por estado
+      if (filtroEstado !== "todos") {
+        if (filtroEstado === "vencido") {
+          if (!(mes.estado === "pendiente" && estaVencido(mes.vencimiento || ""))) return false
+        } else if (mes.estado !== filtroEstado) {
+          return false
+        }
+      }
 
-    // Filtro por búsqueda
-    if (busqueda && !mes.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false
+      // Filtro por estudiante
+      if (filtroEstudiante !== "todos" && mes.estudiante !== filtroEstudiante) return false
 
-    return true
-  })
+      // Filtro por periodo
+      if (filtroPeriodo === "verano" && (mes.nombre === "Junio" || mes.nombre === "Julio")) return true
+      if (filtroPeriodo === "regular" && mes.nombre !== "Junio" && mes.nombre !== "Julio") return true
+      if (filtroPeriodo !== "todos" && filtroPeriodo !== "verano" && filtroPeriodo !== "regular") return false
+
+      return true
+    })
+  }
+
+  const mesesFiltrados = filtrarMeses()
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -206,51 +384,6 @@ export default function ColegiaturaPage() {
                 <CardDescription className="text-gray-600">Estado de colegiaturas del ciclo escolar</CardDescription>
               </CardHeader>
               <CardContent className="p-4">
-                <div className="flex justify-center mb-6">
-                  <div className="relative w-32 h-32">
-                    <svg className="w-full h-full" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="10" />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="#ec4899"
-                        strokeWidth="10"
-                        strokeDasharray="282.7"
-                        strokeDashoffset="70.7"
-                        transform="rotate(-90 50 50)"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-bold text-gray-800">75%</span>
-                      <span className="text-xs text-gray-500">Pagos al día</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center text-gray-800">
-                    <span className="text-sm font-medium">Pagos realizados</span>
-                    <span className="font-bold">4/10</span>
-                  </div>
-
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-pink-500 rounded-full" style={{ width: "40%" }}></div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 mt-6">
-                    <div className="p-3 rounded-lg bg-white border border-gray-200">
-                      <span className="text-xs text-gray-500">Pagado</span>
-                      <span className="block text-lg font-bold text-green-600">$6,000</span>
-                    </div>
-                    <div className="p-3 rounded-lg bg-white border border-gray-200">
-                      <span className="text-xs text-gray-500">Pendiente</span>
-                      <span className="block text-lg font-bold text-amber-600">$9,000</span>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <div className="flex items-start">
                     <AlertCircle className="h-5 w-5 text-amber-500 mr-3 mt-0.5" />
@@ -295,6 +428,7 @@ export default function ColegiaturaPage() {
                         <div>
                           <p className="font-medium text-gray-800">Mayo 2024</p>
                           <p className="text-sm text-gray-600">Vence: 10/05/2024</p>
+                          <p className="text-xs text-gray-500">Ana Pérez González</p>
                         </div>
                         <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
                           Pendiente
@@ -304,15 +438,24 @@ export default function ColegiaturaPage() {
                     <div className="p-3 border border-gray-200 rounded-lg bg-white">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-medium text-gray-800">Agosto 2024</p>
-                          <p className="text-sm text-gray-600">Vence: 10/08/2024</p>
+                          <p className="font-medium text-gray-800">Mayo 2024</p>
+                          <p className="text-sm text-gray-600">Vence: 10/05/2024</p>
+                          <p className="text-xs text-gray-500">Carlos Pérez González</p>
                         </div>
-                        <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-200">
-                          Próximo
+                        <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
+                          Pendiente
                         </Badge>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">Información sobre convenios</h4>
+                  <p className="text-sm text-blue-700">
+                    Los convenios por atraso se generan automáticamente cuando un estudiante tiene 2 o más pagos
+                    atrasados. 
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -340,7 +483,7 @@ export default function ColegiaturaPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
-                        placeholder="Buscar..."
+                        placeholder="Buscar por mes o estudiante..."
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.target.value)}
                         className="pl-9 bg-white border-gray-200 text-gray-800"
@@ -356,6 +499,7 @@ export default function ColegiaturaPage() {
                         <SelectItem value="todos">Todos</SelectItem>
                         <SelectItem value="pendiente">Pendientes</SelectItem>
                         <SelectItem value="pagado">Pagados</SelectItem>
+                        <SelectItem value="vencido">Vencidos</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select value={filtroEstudiante} onValueChange={setFiltroEstudiante}>
@@ -386,63 +530,148 @@ export default function ColegiaturaPage() {
               </div>
 
               <CardContent className="p-0">
-                <div className="divide-y">
-                  {mesesFiltrados.map((mes) => {
-                    const isVencido = mes.estado === "pendiente" && estaVencido(mes.vencimiento || "")
-                    const estado = isVencido ? "vencido" : mes.estado
+                {/* Agrupar mensualidades por estudiante */}
+                {filtroEstudiante === "todos" ? (
+                  // Si no hay filtro de estudiante, mostrar agrupados por estudiante
+                  estudiantes.map((est) => {
+                    const mesesEstudiante = mesesFiltrados.filter((mes) => mes.estudiante === est.id)
+                    if (mesesEstudiante.length === 0) return null
 
                     return (
-                      <div
-                        key={mes.id}
-                        className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors ${
-                          mes.estado === "pagado" ? "opacity-75" : ""
-                        }`}
-                      >
-                        <div className="flex items-start mb-3 sm:mb-0">
-                          {mes.estado === "pendiente" && (
-                            <Checkbox
-                              id={`mes-${mes.id}`}
-                              checked={mesesSeleccionados.includes(mes.id)}
-                              onCheckedChange={() => toggleMesSeleccionado(mes.id)}
-                              className="mr-3 mt-1"
-                              disabled={mes.estado === "pagado"}
-                            />
-                          )}
-                          <div>
-                            <div className="flex items-center">
-                              <h3 className="font-medium text-gray-800">{mes.nombre}</h3>
-                              {mes.incluye && (
-                                <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-200">
-                                  + {mes.incluye}
-                                </Badge>
-                              )}
-                              <div className="ml-3">{getEstadoBadge(estado)}</div>
-                            </div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              {mes.estado === "pagado" ? (
-                                <span>Pagado el {mes.fechaPago}</span>
-                              ) : (
-                                <span>Vence el {mes.vencimiento}</span>
-                              )}
-                            </div>
-                          </div>
+                      <div key={est.id} className="mb-4">
+                        <div className="bg-gray-100 p-3 border-b border-gray-200">
+                          <h3 className="font-medium text-gray-800">
+                            {est.nombre} - {est.grado}
+                            {est.tieneConvenio && (
+                              <Badge className="ml-2 bg-pink-100 text-pink-700 border-pink-200">Con convenio</Badge>
+                            )}
+                          </h3>
                         </div>
-                        <div className="flex flex-col sm:items-end">
-                          <div className="font-bold text-lg text-gray-800">${mes.monto.toFixed(2)}</div>
-                          {mes.interes && (
-                            <div className="text-sm text-red-500">+ ${mes.interes.toFixed(2)} (10% interés)</div>
-                          )}
-                          {isVencido && (
-                            <div className="text-sm text-red-500 flex items-center">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              Incluye 10% de interés
-                            </div>
-                          )}
+                        <div className="divide-y">
+                          {mesesEstudiante.map((mes) => {
+                            const isVencido = mes.estado === "pendiente" && estaVencido(mes.vencimiento || "")
+                            const estado = isVencido ? "vencido" : mes.estado
+
+                            return (
+                              <div
+                                key={mes.id}
+                                className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors ${
+                                  mes.estado === "pagado" ? "opacity-75" : ""
+                                }`}
+                              >
+                                <div className="flex items-start mb-3 sm:mb-0">
+                                  {mes.estado === "pendiente" && (
+                                    <Checkbox
+                                      id={mes-${mes.id}}
+                                      checked={mesesSeleccionados.includes(mes.id)}
+                                      onCheckedChange={() => toggleMesSeleccionado(mes.id)}
+                                      className="mr-3 mt-1"
+                                      disabled={mes.estado === "pagado"}
+                                    />
+                                  )}
+                                  <div>
+                                    <div className="flex items-center">
+                                      <h3 className="font-medium text-gray-800">{mes.nombre}</h3>
+                                      {mes.incluye && (
+                                        <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-200">
+                                          + {mes.incluye}
+                                        </Badge>
+                                      )}
+                                      <div className="ml-3">{getEstadoBadge(estado)}</div>
+                                    </div>
+                                    <div className="text-sm text-gray-500 mt-1">
+                                      {mes.estado === "pagado" ? (
+                                        <span>Pagado el {mes.fechaPago}</span>
+                                      ) : (
+                                        <span>Vence el {mes.vencimiento}</span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-gray-500">Estudiante: {mes.nombreEstudiante}</div>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col sm:items-end">
+                                  <div className="font-bold text-lg text-gray-800">${mes.monto.toFixed(2)}</div>
+                                  {mes.interes && (
+                                    <div className="text-sm text-red-500">
+                                      + ${mes.interes.toFixed(2)} (10% interés)
+                                    </div>
+                                  )}
+                                  {isVencido && (
+                                    <div className="text-sm text-red-500 flex items-center">
+                                      <AlertCircle className="h-3 w-3 mr-1" />
+                                      Incluye 10% de interés
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     )
-                  })}
-                </div>
+                  })
+                ) : (
+                  // Si hay filtro de estudiante, mostrar solo las mensualidades de ese estudiante
+                  <div className="divide-y">
+                    {mesesFiltrados.map((mes) => {
+                      const isVencido = mes.estado === "pendiente" && estaVencido(mes.vencimiento || "")
+                      const estado = isVencido ? "vencido" : mes.estado
+                      const estudianteInfo = estudiantes.find((e) => e.id === mes.estudiante)
+
+                      return (
+                        <div
+                          key={mes.id}
+                          className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors ${
+                            mes.estado === "pagado" ? "opacity-75" : ""
+                          }`}
+                        >
+                          <div className="flex items-start mb-3 sm:mb-0">
+                            {mes.estado === "pendiente" && (
+                              <Checkbox
+                                id={mes-${mes.id}}
+                                checked={mesesSeleccionados.includes(mes.id)}
+                                onCheckedChange={() => toggleMesSeleccionado(mes.id)}
+                                className="mr-3 mt-1"
+                                disabled={mes.estado === "pagado"}
+                              />
+                            )}
+                            <div>
+                              <div className="flex items-center">
+                                <h3 className="font-medium text-gray-800">{mes.nombre}</h3>
+                                {mes.incluye && (
+                                  <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-200">
+                                    + {mes.incluye}
+                                  </Badge>
+                                )}
+                                <div className="ml-3">{getEstadoBadge(estado)}</div>
+                              </div>
+                              <div className="text-sm text-gray-500 mt-1">
+                                {mes.estado === "pagado" ? (
+                                  <span>Pagado el {mes.fechaPago}</span>
+                                ) : (
+                                  <span>Vence el {mes.vencimiento}</span>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">Estudiante: {mes.nombreEstudiante}</div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col sm:items-end">
+                            <div className="font-bold text-lg text-gray-800">${mes.monto.toFixed(2)}</div>
+                            {mes.interes && (
+                              <div className="text-sm text-red-500">+ ${mes.interes.toFixed(2)} (10% interés)</div>
+                            )}
+                            {isVencido && (
+                              <div className="text-sm text-red-500 flex items-center">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Incluye 10% de interés
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="bg-gray-50 border-t border-gray-200 p-4">
                 <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -470,59 +699,41 @@ export default function ColegiaturaPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
-                {/* Selección de estudiante */}
-                <div className="space-y-2">
-                  <Label htmlFor="estudiante" className="text-gray-700">
-                    Estudiante
-                  </Label>
-                  <Select value={estudiante} onValueChange={setEstudiante}>
-                    <SelectTrigger className="h-10 text-gray-800">
-                      <SelectValue placeholder="Seleccione un estudiante" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {estudiantes.map((est) => (
-                        <SelectItem key={est.id} value={est.id}>
-                          {est.nombre} - {est.grado}
-                          {est.tieneConvenio && " (Con convenio)"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 {/* Resumen del pago */}
                 {mesesSeleccionados.length > 0 && (
                   <div className="space-y-2">
                     <Label className="text-gray-700">Resumen del Pago</Label>
                     <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                      {estudiante && (
+                        <div className="mb-3 pb-2 border-b border-gray-200">
+                          <p className="font-medium text-gray-800">
+                            Estudiante: {estudiantes.find((e) => e.id === estudiante)?.nombre}
+                          </p>
+                        </div>
+                      )}
                       <div className="space-y-2">
                         {mesesSeleccionados.map((mesId) => {
                           const mes = mesesColegiatura.find((m) => m.id === mesId)
                           if (!mes) return null
+
+                          const isVencido = mes.estado === "pendiente" && estaVencido(mes.vencimiento || "")
+                          const interesCalculado = isVencido && !mes.interes ? mes.monto * 0.1 : mes.interes || 0
+
                           return (
-                            <div key={mesId} className="flex justify-between items-center text-gray-800">
-                              <span>Colegiatura {mes.nombre}</span>
-                              <span className="font-medium">${mes.monto.toFixed(2)}</span>
+                            <div key={mesId}>
+                              <div className="flex justify-between items-center text-gray-800">
+                                <span>Colegiatura {mes.nombre}</span>
+                                <span className="font-medium">${mes.monto.toFixed(2)}</span>
+                              </div>
+                              {interesCalculado > 0 && (
+                                <div className="flex justify-between items-center text-red-500 text-sm">
+                                  <span>+ Interés por pago tardío (10%)</span>
+                                  <span className="font-medium">${interesCalculado.toFixed(2)}</span>
+                                </div>
+                              )}
                             </div>
                           )
                         })}
-                        {mesesSeleccionados.some((mesId) => {
-                          const mes = mesesColegiatura.find((m) => m.id === mesId)
-                          return mes && mes.interes
-                        }) && (
-                          <div className="flex justify-between items-center text-red-500">
-                            <span>Intereses por pago tardío</span>
-                            <span className="font-medium">
-                              $
-                              {mesesSeleccionados
-                                .reduce((total, mesId) => {
-                                  const mes = mesesColegiatura.find((m) => m.id === mesId)
-                                  return total + (mes?.interes || 0)
-                                }, 0)
-                                .toFixed(2)}
-                            </span>
-                          </div>
-                        )}
                         <div className="border-t pt-2 mt-2 flex justify-between items-center font-bold text-gray-800">
                           <span>Total a pagar:</span>
                           <span className="text-lg">${calcularTotal().toFixed(2)}</span>
@@ -532,91 +743,111 @@ export default function ColegiaturaPage() {
                   </div>
                 )}
 
-                {/* Opción de facturación */}
-                <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox
-                    id="facturar"
-                    checked={facturar}
-                    onCheckedChange={(checked) => {
-                      setFacturar(checked === true)
-                      if (checked === true) setMostrarFacturacion(true)
-                    }}
-                  />
-                  <Label htmlFor="facturar" className="font-medium cursor-pointer flex items-center text-gray-700">
-                    <Receipt className="h-4 w-4 mr-2 text-pink-500" />
-                    Requiero factura
-                  </Label>
-                </div>
-
-                {/* Datos de facturación */}
-                {facturar && mostrarFacturacion && (
-                  <div className="space-y-3 border-t pt-3 mt-3">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-medium flex items-center text-gray-800">
-                        <Building2 className="h-4 w-4 mr-2 text-pink-500" />
-                        Datos de Facturación
-                      </h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setMostrarFacturacion(!mostrarFacturacion)}
-                        className="h-8 px-2 text-gray-700"
-                      >
-                        {mostrarFacturacion ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="razonSocial" className="text-gray-700">
-                          Razón Social
-                        </Label>
-                        <Input id="razonSocial" placeholder="Nombre o Razón Social" className="text-gray-800" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="rfc" className="text-gray-700">
-                          RFC
-                        </Label>
-                        <Input id="rfc" placeholder="RFC con homoclave" className="text-gray-800" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cfdi" className="text-gray-700">
-                          Uso de CFDI
-                        </Label>
-                        <Select defaultValue="G03">
-                          <SelectTrigger className="text-gray-800">
-                            <SelectValue placeholder="Seleccione uso de CFDI" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="G03">G03 - Gastos en general</SelectItem>
-                            <SelectItem value="P01">P01 - Por definir</SelectItem>
-                            <SelectItem value="D04">D04 - Gastos educativos</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-gray-700">
-                          Correo Electrónico
-                        </Label>
-                        <Input id="email" type="email" placeholder="Para envío de factura" className="text-gray-800" />
-                      </div>
+                <div className="p-3 bg-blue-50 rounded-md border border-blue-100">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Para solicitar factura, envíe un correo a{" "}
+                        <span className="font-medium">facturacion@colegio.edu</span> con su comprobante de pago y datos
+                        fiscales.
+                      </p>
                     </div>
                   </div>
-                )}
+                </div>
               </CardContent>
               <CardFooter className="bg-gray-50 border-t border-gray-200 p-4">
                 <Button
                   className="w-full bg-pink-600 hover:bg-pink-700"
                   onClick={handlePagoExitoso}
-                  disabled={!estudiante || mesesSeleccionados.length === 0}
+                  disabled={mesesSeleccionados.length === 0}
                 >
-                  <span className="text-white">Pagar ${calcularTotal().toFixed(2)}</span>
+                  <div className="flex items-center justify-center">
+                    <svg viewBox="0 0 256 256" className="h-5 w-5 mr-2">
+                      <path
+                        d="M216.2,94.4l-32.7,32.7,13.1,13.1a8,8,0,0,1,0,11.3,8.1,8.1,0,0,1-11.3,0l-13.1-13.1-17.4,17.4,26.2,26.1a8,8,0,0,1,0,11.3,8.1,8.1,0,0,1-11.3,0L143.6,167l-17.4,17.4,13.1,13.1a8,8,0,0,1,0,11.3,8.1,8.1,0,0,1-11.3,0l-13.1-13.1L82.2,228.4a28,28,0,0,1-39.6-39.6L76.3,155l-13-13a8,8,0,0,1,11.3-11.3l13.1,13.1L105,126.4,78.9,100.2a8,8,0,0,1,11.3-11.3l26.1,26.2,17.4-17.4L120.6,84.6a8,8,0,0,1,11.3-11.3l13.1,13.1,32.7-32.7a28,28,0,0,1,39.6,39.6ZM54,200.1a12,12,0,1,0,17,0A12,12,0,0,0,54,200.1Z"
+                        fill="#ffffff"
+                      />
+                    </svg>
+                    <span className="text-white">Pagar con Mercado Pago: ${calcularTotal().toFixed(2)}</span>
+                  </div>
                 </Button>
               </CardFooter>
             </Card>
           </div>
         </div>
       )}
+
+      {/* Diálogo para mostrar el ticket */}
+      <Dialog open={ticketDialogOpen} onOpenChange={setTicketDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">Comprobante de Pago</DialogTitle>
+          </DialogHeader>
+          {ticketData && (
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <div className="text-center mb-4">
+                <h3 className="font-bold text-lg">{ticketData.colegio}</h3>
+                <p className="text-sm text-gray-600">{ticketData.direccion}</p>
+                <p className="text-sm text-gray-600">Tel: {ticketData.telefono}</p>
+              </div>
+
+              <div className="border-t border-b border-gray-200 py-3 my-3">
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-600">Ticket:</span>
+                  <span className="font-medium">{ticketData.ticket}</span>
+                </div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-600">Fecha:</span>
+                  <span>{ticketData.fecha}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Estudiante:</span>
+                  <span>{ticketData.estudiante}</span>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                {ticketData.meses.map((mes: any, index: number) => (
+                  <div key={index} className="mb-2">
+                    <div className="flex justify-between font-medium">
+                      <span>Colegiatura {mes.nombre}:</span>
+                      <span>${mes.monto.toFixed(2)}</span>
+                    </div>
+                    {(mes.interes || (mes.estado === "pendiente" && estaVencido(mes.vencimiento || ""))) && (
+                      <div className="flex justify-between text-sm text-red-500">
+                        <span>Interés (10%):</span>
+                        <span>${(mes.interes || mes.monto * 0.1).toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                <div className="flex justify-between font-bold">
+                  <span>Total:</span>
+                  <span>${ticketData.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 text-center text-sm text-gray-500">
+                <p>¡Gracias por su pago!</p>
+                <p>Este documento es un comprobante de pago válido.</p>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-center gap-4 mt-4">
+            <Button variant="outline" onClick={() => setTicketDialogOpen(false)}>
+              Cerrar
+            </Button>
+            <Button onClick={() => window.print()} className="bg-pink-600 hover:bg-pink-700">
+              <Printer className="mr-2 h-4 w-4" />
+              Imprimir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
