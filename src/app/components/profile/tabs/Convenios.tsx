@@ -1,5 +1,4 @@
-import React from "react";
-import { StudentData } from "@/app/types/profile";
+import React, { useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -8,12 +7,60 @@ import {
 } from "@/app/components/ui/card";
 import Image from "next/image";
 import { Clock } from "lucide-react";
+import { Database } from "@/app/lib/types";
+import { useState } from "react";
+
+type Alumno = Database['public']['Tables']['Alumno']['Row']
+type Convenio = Database['public']['Tables']['Convenio']['Row']
 
 interface EstudiantesProp {
-  hijosData: StudentData[];
+  hijosData: Alumno[];
 }
 
 export function Convenios({ hijosData }: EstudiantesProp) {
+  // Filtrar alumnos que tienen convenio
+  const alumnosConConvenio = hijosData.filter((hijo) => hijo.convenio);
+  const [convenios, setConvenios] = useState<Record<string, Convenio>>({})
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchConvenios = async () => {
+      const conveniosTemp: Record<string, Convenio> = {}
+      
+      if (alumnosConConvenio.length === 0) {
+        setLoading(false)
+        return
+      }
+
+      for (const alumno of alumnosConConvenio) {
+        if (alumno.convenio) {
+          try {
+            const response = await fetch(`/api/convenios/${alumno.id_alumno}/by_id`)
+  
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Failed fetching convenios')
+            }
+  
+            const result = await response.json();
+            // Aquí está el cambio principal: tomar el primer elemento del array
+            if (Array.isArray(result) && result.length > 0) {
+              conveniosTemp[alumno.id_alumno.toString()] = result[0];
+            }
+          } catch (err) {
+            console.error(
+              `Error al obtener la informacion de convenio del alumno: ${alumno.nombre} ${alumno.apellido_paterno} => `, err
+            )
+          } 
+        }
+      }
+      
+      setConvenios(conveniosTemp);
+      setLoading(false)
+    }
+    fetchConvenios()
+  }, [alumnosConConvenio, hijosData])
+  
   return (
     <div>
       <Card className="border-gray-200 shadow-md">
@@ -21,21 +68,27 @@ export function Convenios({ hijosData }: EstudiantesProp) {
           <CardTitle className="text-gray-800">Convenios por Atraso</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          {hijosData.some((hijo) => hijo.convenio) ? (
+          {loading ? (
+            <div className="text-center py-4">
+              <p className="text-gray-600">Cargando información de convenios...</p>
+            </div>
+          ) : alumnosConConvenio.length > 0 ? (
             <div className="space-y-6">
-              {hijosData
-                .filter((hijo) => hijo.convenio)
-                .map((hijo) => (
+              {alumnosConConvenio.map((hijo) => {
+                // Acceder directamente al convenio usando el id_alumno como clave
+                const convenioAlumno = convenios[hijo.id_alumno.toString()];
+                
+                return (
                   <div
-                    key={hijo.id}
+                    key={hijo.id_alumno}
                     className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm"
                   >
                     <div className="flex items-start">
                       <div className="mr-4">
                         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-pink-100">
                           <Image
-                            src={hijo.imagen || "/placeholder.svg"}
-                            alt={hijo.nombre}
+                            src="/placeholder.svg"
+                            alt={`${hijo.nombre} ${hijo.apellido_paterno}`}
                             width={48}
                             height={48}
                             className="object-cover"
@@ -44,28 +97,39 @@ export function Convenios({ hijosData }: EstudiantesProp) {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold text-gray-800">
-                          {hijo.nombre}
+                          {hijo.nombre} {hijo.apellido_paterno} {hijo.apellido_materno}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {hijo.grado}
-                          {hijo.grupo}
+                          {hijo.grado} {hijo.grupo}
                         </p>
 
-                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <h4 className="font-medium text-gray-800">
-                            {hijo.convenio?.tipo}
-                          </h4>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Descuento: {hijo.convenio?.descuento}
-                          </p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Vigencia: {hijo.convenio?.vigencia}
-                          </p>
-                        </div>
+                        {convenioAlumno ? (
+                          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 className="font-medium text-gray-800">
+                              Convenio de pago
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Incremento: {convenioAlumno.porcentaje_incremento}%
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Fecha de inicio: {convenioAlumno.fecha_inicio}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Estado: {convenioAlumno.firmado ? 'Firmado' : 'Pendiente de firma'}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <p className="text-sm text-yellow-700">
+                              La información del convenio está cargando o no está disponible.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                ))}
+                );
+              })}
 
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 className="font-medium text-gray-800 mb-2">
@@ -74,7 +138,7 @@ export function Convenios({ hijosData }: EstudiantesProp) {
                 <p className="text-sm text-gray-600">
                   Los convenios por atraso son acuerdos especiales que permiten
                   a los padres de familia regularizar sus pagos pendientes con
-                  un descuento aplicado.
+                  un incremento porcentual aplicado.
                 </p>
                 <p className="text-sm text-gray-600 mt-2">
                   Para solicitar un convenio, por favor acuda a la

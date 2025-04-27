@@ -7,10 +7,10 @@ export async function GET(
 ) {
   try {
     const alumnoId = (await params).id;
-    const pagoColegiatura = await userService.getSiguientesPagosAlumno(alumnoId);
+    const pagoColegiatura = await userService.getAllPagadosByAlumno(alumnoId);
     return NextResponse.json(pagoColegiatura);
   } catch (error) {
-    console.error('Error en el handler GET /api/pago-colegiatura/[id]/by_id:', error);
+    console.error('Error en el handler GET /api/pago-colegiatura/[id]/realizados:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

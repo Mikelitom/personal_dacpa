@@ -7,7 +7,6 @@ import { InfoPersonal } from "./tabs/InfoPersonal"
 import { Estudiantes } from "./tabs/Estudiantes"
 import { HistorialPagos } from './tabs/HistorialPagos'
 import { Convenios } from "./tabs/Convenios"
-import { Documentos } from "./tabs/Documentos"
 import { Database } from "@/app/lib/types"
 
 type PadreFamilia = Database['public']['Tables']['PadreFamilia']['Row']
@@ -62,10 +61,6 @@ export function ProfileLayout({
 
         {activeTab === "convenios" && (
           <Convenios hijosData={alumnosData} />
-        )}
-
-        {activeTab === "documentos" && (
-          <Documentos />
         )}
       </div>
     </div>
