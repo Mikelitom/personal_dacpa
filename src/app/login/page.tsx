@@ -1,7 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Database } from "../lib/types";
 
 export default function Login() {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function Login() {
   const [ correo, setCorreo ] = useState('');
   const [ contraseña, setContraseña ] = useState('');
   const [ error, setError ] = useState<string | null>(null);
+  const supabase = createClientComponentClient<Database>();
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +39,7 @@ export default function Login() {
   
       // Redirigir forzando reload completo para que el middleware vea las cookies nuevas
       const dashboardUrl = userData.rol === 'admin' ? '/dashboard-admin' : '/dashboard';
-      window.location.href = dashboardUrl;
+      router.replace(dashboardUrl);
   
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión');

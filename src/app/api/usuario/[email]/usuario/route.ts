@@ -3,10 +3,10 @@ import { userService } from '@/app/services/dbService'
 
 export async function GET(
   request: Request,
-  { params }: { params: { email: string } }
+  { params }: { params: Promise<{ email: string }> }
 ) {
   try {
-    const correo = await params.email;
+    const correo = (await params).email;
 
     const usuario = await userService.getUsuarioByEmail(correo);
 

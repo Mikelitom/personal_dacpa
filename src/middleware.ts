@@ -2,17 +2,11 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-export async function middleware(req: NextRequest) {
+export async function middleware( req: NextRequest ) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
 
-  const { data: { session }, error } = await supabase.auth.getSession();
-
-  if (error) {
-    console.error('Error obteniendo sesión en middleware:', error.message)
-  }
-
-  console.log('Session en middleware:', session);
+  const { data: { session } } = await supabase.auth.getSession();
 
   if (!session && (
     req.nextUrl.pathname.startsWith('/dashboard') ||
@@ -21,7 +15,7 @@ export async function middleware(req: NextRequest) {
     const redirectUrl = new URL('/login', req.url);
     return NextResponse.redirect(redirectUrl);
   }
-
+  
   if (session) {
     const { data: userData } = await supabase
       .from('Usuario')
@@ -32,11 +26,11 @@ export async function middleware(req: NextRequest) {
     const userRole = userData?.rol;
 
     if (userRole === 'padre' && req.nextUrl.pathname.startsWith('/dashboard-admin')) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      return NextResponse.redirect(new URL('/dashboard', req.url))
     }
 
     if (userRole === 'admin' && req.nextUrl.pathname.startsWith('/dashboard')) {
-      return NextResponse.redirect(new URL('/dashboard-admin', req.url));
+      return NextResponse.redirect(new URL('/dashboard-admin', req.url))
     }
 
     if (req.nextUrl.pathname === '/login') {
@@ -50,10 +44,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard',
-    '/dashboard/:path*',
-    '/dashboard-admin',
-    '/dashboard-admin/:path*',
-    '/login',
-  ],
+    '/dashboard/:path*', 
+    '/dashboard-admin/:path*'
+  ]
 };
