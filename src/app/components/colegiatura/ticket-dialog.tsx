@@ -1,9 +1,9 @@
 "use client"
 
 import { Printer } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import type { TicketData } from "../types"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/dialog"
+import { Button } from "@/app/components/ui/button"
+import type { TicketData } from "@/app/dashboard/colegiatura/types"
 
 interface TicketDialogProps {
   open: boolean

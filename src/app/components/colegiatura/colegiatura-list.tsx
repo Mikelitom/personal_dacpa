@@ -1,7 +1,7 @@
 import { AlertCircle } from "lucide-react"
-import { CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { MesColegiatura, EstudianteUI } from "../types"
+import { CardContent, CardFooter } from "@/app/components/ui/card"
+import { Badge } from "@/app/components/ui/badge"
+import type { MesColegiatura, EstudianteUI } from "@/app/dashboard/colegiatura/types"
 import MesColegiaturaItem from "./mes-colegiatura-item"
 
 interface ColegiaturaListProps {

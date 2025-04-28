@@ -1,7 +1,7 @@
 import { AlertCircle, DollarSign, Clock } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { MesColegiatura, Convenio } from "../types"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/app/components/ui/card"
+import { Badge } from "@/app/components/ui/badge"
+import type { MesColegiatura, Convenio } from "@/app/dashboard/colegiatura/types"
 
 interface ColegiaturaResumenProps {
   convenios: Convenio[]
@@ -55,7 +55,6 @@ export default function ColegiaturaResumen({ convenios, mesesColegiatura, estaVe
                     <div>
                       <p className="font-medium text-gray-800">{convenio.estudiante}</p>
                       <p className="text-sm text-gray-600">{convenio.tipo}</p>
-                      <p className="text-sm text-gray-600 mt-1">{convenio.descripcion}</p>
                       <div className="mt-2 text-xs text-gray-500">
                         Vigencia: {new Date(convenio.fecha_inicio).toLocaleDateString()} - {convenio.fechaFin}
                       </div>

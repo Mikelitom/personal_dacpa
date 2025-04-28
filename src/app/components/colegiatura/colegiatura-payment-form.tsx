@@ -1,10 +1,10 @@
 "use client"
 
 import { AlertCircle, DollarSign } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import type { MesColegiatura, EstudianteUI } from "../types"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/app/components/ui/card"
+import { Button } from "@/app/components/ui/button"
+import { Label } from "@/app/components/ui/label"
+import type { MesColegiatura, EstudianteUI } from "@/app/dashboard/colegiatura/types"
 
 interface ColegiaturaPaymentFormProps {
   mesesSeleccionados: string[]
