@@ -64,12 +64,12 @@ export function Sidebar({ className, onCloseMobileMenu }: SidebarProps) {
       label: "Productos",
       subMenu: [
         {
-          href: "/dashboard/productos/libros",
+          href: "/dashboard/productos/books",
           icon: <BookOpen size={18} strokeWidth={1.5} />,
           label: "Libros",
         },
         {
-          href: "/dashboard/productos/uniformes",
+          href: "/dashboard/productos/uniforms",
           icon: <ShoppingBag size={18} strokeWidth={1.5} />,
           label: "Uniformes",
         },

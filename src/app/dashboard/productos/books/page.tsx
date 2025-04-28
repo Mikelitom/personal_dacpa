@@ -10,52 +10,73 @@ import { Badge } from "@/app/components/ui/badge"
 import { ShoppingCart, Check, AlertCircle } from "lucide-react"
 import { useToast } from "@/app/components/ui/use-toast"
 import { Toaster } from "@/app/components/ui/toaster"
+import { Articulo } from "../types"
 
 export default function BooksPage() {
   const { toast } = useToast()
-  const { paquetes, setPaquetes } = useState([])
-  const { loading, setLoading } = useState(true)
-  const { error, setError } = useState(null)
-  const { pedidos, setPedidos } = useState<{ [key: string]: boolean}>({})
-  const [carrito, setCarrito] = useState<{ [key: string]: boolean }>({})
+
+  const [libros, setLibros] = useState<Articulo[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [carrito, setCarrito] = useState<{ [key: number]: boolean }>({})
   const [carritoCount, setCarritoCount] = useState(0)
 
   useEffect(() => {
     const fetchLibros = async () => {
       try {
-        setLoading(true);
-
-        const response = await fetch('/api/books');
+        setLoading(true)
+        const response = await fetch('/api/articulos/Libros') // endpoint que trae todos los artículos
 
         if (!response.ok) {
-          throw new Error('Failed to fetch book data.')
+          throw new Error('Error al cargar artículos.')
         }
 
-        const data = await response.json()
-        setPaquetes(data)
-        setLoading(false)
+        const data: Articulo[] = await response.json()
+
+        // Filtramos solo los que correspondan a libros (por categoría o por otra lógica)
+        const librosFiltrados = data.filter(a => a.categoria.toLowerCase().includes('libro'))
+
+        setLibros(librosFiltrados)
       } catch (error: any) {
         setError(error.message)
-        setLoading(false)
         toast({
           title: 'Error al cargar libros',
-          description: 'No pudimos cargar el catalogo de libros. Por favor, intenta mas tarde',
+          description: 'No pudimos cargar el catálogo de libros. Por favor, intenta más tarde.',
           variant: 'destructive'
         })
+      } finally {
+        setLoading(false)
       }
     }
 
-    fetchLibros();
-  })
+    fetchLibros()
+  }, [toast])
 
-  const agregarAlCarrito = (paqueteId: string) => {
-    setCarrito({ ...carrito, [paqueteId]: true })
-    setCarritoCount(carritoCount + 1)
+  const agregarAlCarrito = (id_articulo: number, nombre: string) => {
+    setCarrito(prev => ({ ...prev, [id_articulo]: true }))
+    setCarritoCount(prev => prev + 1)
+
     toast({
-      title: "Paquete agregado al carrito",
-      description: `El paquete de ${paquetes[paqueteId as keyof typeof paquetes].grado} ha sido agregado al carrito.`,
+      title: "Libro agregado",
+      description: `Has agregado "${nombre}" al carrito.`,
       duration: 3000,
     })
+  }
+
+  const grados = ["1er Grado", "2do Grado", "3er Grado"]
+
+  // Aquí tú puedes tener alguna lógica para clasificar libros por grado basado en el nombre, sku, etc.
+  const filtrarPorGrado = (libros: Articulo[], grado: string) => {
+    if (grado.includes("1er")) {
+      return libros.filter(l => l.nombre.toLowerCase().includes("1"))
+    }
+    if (grado.includes("2do")) {
+      return libros.filter(l => l.nombre.toLowerCase().includes("2"))
+    }
+    if (grado.includes("3er")) {
+      return libros.filter(l => l.nombre.toLowerCase().includes("3"))
+    }
+    return []
   }
 
   return (
@@ -76,90 +97,61 @@ export default function BooksPage() {
         </Link>
       </div>
 
-      <Tabs defaultValue="1">
+      <Tabs defaultValue="1er Grado">
         <TabsList className="mb-6">
-          <TabsTrigger value="1">1er Grado</TabsTrigger>
-          <TabsTrigger value="2">2do Grado</TabsTrigger>
-          <TabsTrigger value="3">3er Grado</TabsTrigger>
+          {grados.map(grado => (
+            <TabsTrigger key={grado} value={grado}>
+              {grado}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        {Object.keys(paquetes).map((grado) => {
-          const paquete = paquetes[grado as keyof typeof paquetes]
-          return (
-            <TabsContent key={grado} value={grado}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Paquete de Libros - {paquete.grado}</CardTitle>
-                  <CardDescription>Incluye todos los libros necesarios para el ciclo escolar</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4 flex justify-between items-center">
-                    <div>
-                      <h3 className="text-lg font-semibold">Precio del paquete completo:</h3>
-                      <p className="text-2xl font-bold text-blue-600">${paquete.precio.toFixed(2)}</p>
-                      <p className="text-sm text-gray-500">Ahorro del 10% comprando el paquete completo</p>
+        {grados.map(grado => (
+          <TabsContent key={grado} value={grado}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtrarPorGrado(libros, grado).map(libro => (
+                <Card key={libro.id_articulo} className="flex flex-col">
+                  <CardHeader>
+                    <CardTitle>{libro.nombre}</CardTitle>
+                    <CardDescription>{libro.descripcion}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center">
+                    <div className="relative w-full h-48 mb-4">
+                      <Image
+                        src={libro.imagen_url || "/placeholder.svg"}
+                        alt={libro.nombre}
+                        fill
+                        className="object-contain rounded"
+                      />
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => agregarAlCarrito(grado)}
-                        disabled={carrito[paquete.id]}
-                        className="min-w-[150px]"
-                      >
-                        {carrito[paquete.id] ? (
-                          <>
-                            <Check className="mr-2 h-4 w-4" />
-                            Agregado
-                          </>
-                        ) : (
-                          <>
-                            <ShoppingCart className="mr-2 h-4 w-4" />
-                            Agregar al carrito
-                          </>
-                        )}
-                      </Button>
-                      {carrito[paquete.id] && (
-                        <Link href="/dashboard/carrito">
-                          <Button variant="outline">Ver carrito</Button>
-                        </Link>
+                    <p className="text-blue-600 text-xl font-bold">${libro.precio_venta.toFixed(2)}</p>
+                  </CardContent>
+                  <CardFooter className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => agregarAlCarrito(libro.id_articulo, libro.nombre)}
+                      disabled={carrito[libro.id_articulo]}
+                      className="w-full"
+                    >
+                      {carrito[libro.id_articulo] ? (
+                        <>
+                          <Check className="mr-2 h-4 w-4" />
+                          Agregado
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          Agregar al carrito
+                        </>
                       )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {paquete.libros.map((libro) => (
-                      <div key={libro.id} className="border rounded-lg p-4 flex flex-col">
-                        <div className="relative h-48 mb-4 mx-auto">
-                          <Image
-                            src={libro.imagen || "/placeholder.svg"}
-                            alt={libro.titulo}
-                            width={150}
-                            height={200}
-                            className="object-contain"
-                          />
-                        </div>
-                        <h3 className="font-medium">{libro.titulo}</h3>
-                        <p className="text-gray-500 text-sm mb-2">Edición 2024</p>
-                        <p className="font-bold mt-auto">${libro.precio.toFixed(2)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter className="bg-gray-50 border-t">
-                  <div className="w-full flex justify-between items-center">
-                    <div className="flex items-center">
-                      <AlertCircle className="h-4 w-4 text-amber-500 mr-2" />
-                      <span className="text-sm">Los libros solo se venden en paquete completo</span>
-                    </div>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
-                      {paquete.libros.length} libros
-                    </Badge>
-                  </div>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          )
-        })}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        ))}
       </Tabs>
+
       <Toaster />
     </div>
   )
