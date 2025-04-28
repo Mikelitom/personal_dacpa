@@ -1,5 +1,5 @@
 import { Calendar } from "lucide-react"
-import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { CardHeader, CardTitle, CardDescription } from "@/app/components/ui/card"
 
 export default function ColegiaturaHeader() {
   return (

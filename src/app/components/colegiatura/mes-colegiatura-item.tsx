@@ -1,8 +1,8 @@
 import type React from "react"
 import { AlertCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { MesColegiatura } from "../types"
+import { Badge } from "@/app/components/ui/badge"
+import { Checkbox } from "@/app/components/ui/checkbox"
+import type { MesColegiatura } from "@/app/dashboard/colegiatura/types"
 
 interface MesColegiaturaItemProps {
   mes: MesColegiatura

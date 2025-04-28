@@ -1,9 +1,9 @@
 "use client"
 
 import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { EstudianteUI } from "../types"
+import { Input } from "@/app/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import type { EstudianteUI } from "@/app/dashboard/colegiatura/types"
 
 interface ColegiaturaFiltersProps {
   busqueda: string
@@ -65,16 +65,6 @@ export default function ColegiaturaFilters({
                   {est.nombre.split(" ")[0]}
                 </SelectItem>
               ))}
-            </SelectContent>
-          </Select>
-          <Select value={filtroPeriodo} onValueChange={setFiltroPeriodo}>
-            <SelectTrigger className="w-[140px] h-9 bg-white text-gray-800">
-              <SelectValue placeholder="Periodo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="regular">Regular</SelectItem>
-              <SelectItem value="verano">Verano</SelectItem>
             </SelectContent>
           </Select>
         </div>
