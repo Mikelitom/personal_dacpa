@@ -49,6 +49,40 @@ export default function ReportesPage() {
     },
   ]
 
+  // Lista de reportes históricos
+  const historialReportes = [
+    {
+      id: "hist1",
+      fecha: "2025-04-01",
+      tipo: "estadoCuenta",
+      tipoNombre: "Estado de Cuenta",
+      estudianteId: "est1",
+      estudianteNombre: "Ana Pérez González",
+      fechaInicio: "2025-03-01",
+      fechaFin: "2025-04-01"
+    },
+    {
+      id: "hist2",
+      fecha: "2025-03-25",
+      tipo: "pagosColegiatura",
+      tipoNombre: "Pagos de Colegiatura",
+      estudianteId: "est2",
+      estudianteNombre: "Carlos Pérez González",
+      fechaInicio: "2025-02-01",
+      fechaFin: "2025-03-25"
+    },
+    {
+      id: "hist3",
+      fecha: "2025-03-15",
+      tipo: "comprasProductos",
+      tipoNombre: "Compras de Productos",
+      estudianteId: "todos",
+      estudianteNombre: "Todos los estudiantes",
+      fechaInicio: "2025-01-01",
+      fechaFin: "2025-03-15"
+    }
+  ]
+
   const handleGenerarPDF = (tipoReporte: string, accion: 'descargar' | 'imprimir') => {
     if (!fechaInicio || !fechaFin) {
       alert("Selecciona el rango de fechas.")
@@ -103,6 +137,50 @@ export default function ReportesPage() {
         .catch(error => {
           console.error("Error al descargar el PDF:", error)
           alert("Ocurrió un error al generar el reporte")
+        })
+    }
+  }
+
+  // Nueva función para manejar los reportes del historial usando el mismo endpoint que los reportes nuevos
+  const handleHistorialReporte = (reporte: any, accion: 'descargar' | 'imprimir') => {
+    // Usar el mismo endpoint que para los reportes nuevos, pero con los datos del reporte histórico
+    const url = `/api/generar-pdf?tipo=${reporte.tipo}&estudianteId=${reporte.estudianteId}&fechaInicio=${reporte.fechaInicio}&fechaFin=${reporte.fechaFin}`
+    
+    if (accion === 'imprimir') {
+      // Abrir en nueva pestaña e imprimir - igual que en handleGenerarPDF
+      const ventanaImpresion = window.open(url, "_blank")
+      if (ventanaImpresion) {
+        ventanaImpresion.onload = function() {
+          setTimeout(() => {
+            ventanaImpresion.print()
+          }, 1000)
+        }
+      }
+    } else {
+      // Descargar automáticamente - igual que en handleGenerarPDF
+      fetch(url)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const link = document.createElement("a")
+          const href = window.URL.createObjectURL(blob)
+          
+          // Obtener el nombre descriptivo del reporte
+          let nombreReporte = "reporte"
+          if (reporte.tipo === "estadoCuenta") nombreReporte = "EstadoDeCuenta"
+          else if (reporte.tipo === "pagosColegiatura") nombreReporte = "PagosColegiatura"
+          else if (reporte.tipo === "comprasProductos") nombreReporte = "ComprasProductos"
+          
+          // Crear nombre de archivo descriptivo
+          link.href = href
+          link.download = `${reporte.estudianteId}-${reporte.estudianteNombre.replace(/\s+/g, '-')}-${nombreReporte}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(href)
+        })
+        .catch(error => {
+          console.error("Error al descargar el PDF del historial:", error)
+          alert("Ocurrió un error al obtener el reporte del historial")
         })
     }
   }
@@ -204,30 +282,37 @@ export default function ReportesPage() {
                         <th className="p-3 border-b">Fecha</th>
                         <th className="p-3 border-b">Tipo de Reporte</th>
                         <th className="p-3 border-b">Estudiante</th>
-                      
                         <th className="p-3 border-b">Acciones</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {/* Aquí puedes mapear los reportes anteriores desde una API o estado */}
-                      <tr>
-                        <td className="p-3">2025-04-01</td>
-                        <td className="p-3">Estado de Cuenta</td>
-                        <td className="p-3">Ana Pérez González</td>
-                        <td className="p-3">
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              <Download className="w-4 h-4 mr-1" />
-                              Descargar
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Printer className="w-4 h-4 mr-1" />
-                              Imprimir
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                      {/* Repite más filas según sea necesario */}
+                      {historialReportes.map((reporte) => (
+                        <tr key={reporte.id}>
+                          <td className="p-3">{reporte.fecha}</td>
+                          <td className="p-3">{reporte.tipoNombre}</td>
+                          <td className="p-3">{reporte.estudianteNombre}</td>
+                          <td className="p-3">
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleHistorialReporte(reporte, 'descargar')}
+                              >
+                                <Download className="w-4 h-4 mr-1" />
+                                Descargar
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleHistorialReporte(reporte, 'imprimir')}
+                              >
+                                <Printer className="w-4 h-4 mr-1" />
+                                Imprimir
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -236,7 +321,6 @@ export default function ReportesPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  )
+    </div>
+  )
 }
-              

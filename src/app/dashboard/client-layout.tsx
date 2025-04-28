@@ -10,7 +10,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionContextProvider supabaseClient={supabaseClient}>
-      <div className="flex min-h-screen bg-gray-50 flex-col md:flex-row">
+      <div className="flex min-h-screen w-full bg-gray-50 flex-col md:flex-row">
         <Sidebar />
         <main className="pl-64 min-h-screen bg-gray-50">{children}</main>
       </div>
