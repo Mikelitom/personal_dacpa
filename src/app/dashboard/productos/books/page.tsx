@@ -1,31 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/app/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/app/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Badge } from "@/app/components/ui/badge";
 import { ShoppingCart, Check, BookOpen } from "lucide-react";
 import { useToast } from "@/app/components/ui/use-toast";
 import { Toaster } from "@/app/components/ui/toaster";
 import { motion } from "framer-motion";
 import { Articulo } from "../types";
+import useCart from "@/app/dashboard/carrito/hooks/useCart"; // Importa el hook de carrito
 
 export default function PaquetesPage() {
   const { toast } = useToast();
-  const [carrito, setCarrito] = useState<{ [key: number]: boolean }>({});
+  const { cart, addToCart, removeFromCart, clearCart } = useCart(); // Usa el hook aquí
   const [carritoCount, setCarritoCount] = useState(0);
   const [activeTab, setActiveTab] = useState<string>("");
   const [paquetes, setPaquetes] = useState<Articulo[]>([]);
@@ -49,9 +38,13 @@ export default function PaquetesPage() {
     fetchPaquetes();
   }, []);
 
+  useEffect(() => {
+    // Actualizar el contador de artículos en el carrito
+    setCarritoCount(cart.reduce((acc, item) => acc + item.cantidad, 0));
+  }, [cart]);
+
   const agregarAlCarrito = (paquete: Articulo) => {
-    setCarrito({ ...carrito, [paquete.id_articulo]: true });
-    setCarritoCount(carritoCount + 1);
+    addToCart(paquete); // Usa la función addToCart del hook
     toast({
       title: "Paquete agregado al carrito",
       description: `El paquete "${paquete.nombre}" ha sido agregado al carrito.`,
@@ -64,19 +57,13 @@ export default function PaquetesPage() {
       return <Badge variant="destructive">Sin existencias</Badge>;
     } else if (stock <= 3) {
       return (
-        <Badge
-          variant="outline"
-          className="bg-amber-50 text-amber-600 border-amber-200"
-        >
+        <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
           Pocas existencias
         </Badge>
       );
     } else {
       return (
-        <Badge
-          variant="outline"
-          className="bg-green-50 text-green-600 border-green-200"
-        >
+        <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
           En existencia
         </Badge>
       );
@@ -107,16 +94,11 @@ export default function PaquetesPage() {
               <BookOpen className="h-6 w-6 mr-2 text-pink-500" />
               Paquetes Escolares
             </h1>
-            <p className="text-gray-500 mt-1">
-              Compra paquetes completos para el ciclo escolar 2024-2025
-            </p>
+            <p className="text-gray-500 mt-1">Compra paquetes completos para el ciclo escolar 2024-2025</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <Button
-              variant="outline"
-              className="flex items-center w-full sm:w-auto"
-            >
+            <Button variant="outline" className="flex items-center w-full sm:w-auto">
               <ShoppingCart className="mr-2 h-4 w-4" />
               Ver carrito
               {carritoCount > 0 && (
@@ -131,11 +113,7 @@ export default function PaquetesPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6 bg-white border border-gray-200 p-1 shadow-sm overflow-x-auto flex w-full">
             {paquetes.map((paquete) => (
-              <TabsTrigger
-                key={paquete.id_articulo}
-                value={paquete.id_articulo.toString()}
-                className="data-[state=active]:bg-pink-50 data-[state=active]:text-pink-700 data-[state=active]:shadow-none flex-1"
-              >
+              <TabsTrigger key={paquete.id_articulo} value={paquete.id_articulo.toString()} className="data-[state=active]:bg-pink-50 data-[state=active]:text-pink-700 data-[state=active]:shadow-none flex-1">
                 {paquete.nombre}
               </TabsTrigger>
             ))}
@@ -145,17 +123,8 @@ export default function PaquetesPage() {
             const sinStock = paquete.stock_actual === 0;
 
             return (
-              <TabsContent
-                key={paquete.id_articulo}
-                value={paquete.id_articulo.toString()}
-                className="w-full"
-              >
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full"
-                >
+              <TabsContent key={paquete.id_articulo} value={paquete.id_articulo.toString()} className="w-full">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="w-full">
                   <Card className="border-none shadow-md overflow-hidden mb-6 w-full">
                     <CardHeader>
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full">
@@ -164,32 +133,24 @@ export default function PaquetesPage() {
                             <BookOpen className="h-5 w-5 mr-2 text-pink-500" />
                             {paquete.nombre}
                           </CardTitle>
-                          <CardDescription>
-                            {paquete.descripcion}
-                          </CardDescription>
+                          <CardDescription>{paquete.descripcion}</CardDescription>
                         </div>
-                        <div className="mt-2 md:mt-0">
-                          {renderStockBadge(paquete.stock_actual)}
-                        </div>
+                        <div className="mt-2 md:mt-0">{renderStockBadge(paquete.stock_actual)}</div>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
                         <div>
-                          <h3 className="text-lg font-semibold">
-                            Precio del paquete:
-                          </h3>
-                          <p className="text-2xl font-bold text-pink-600">
-                            ${paquete.precio_venta.toFixed(2)}
-                          </p>
+                          <h3 className="text-lg font-semibold">Precio del paquete:</h3>
+                          <p className="text-2xl font-bold text-pink-600">${paquete.precio_venta.toFixed(2)}</p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                           <Button
                             onClick={() => agregarAlCarrito(paquete)}
-                            disabled={carrito[paquete.id_articulo] || sinStock}
+                            disabled={cart.some(item => item.id_articulo === paquete.id_articulo) || sinStock}
                             className="w-full sm:min-w-[180px] bg-pink-600 hover:bg-pink-700 disabled:bg-gray-300"
                           >
-                            {carrito[paquete.id_articulo] ? (
+                            {cart.some(item => item.id_articulo === paquete.id_articulo) ? (
                               <>
                                 <Check className="mr-2 h-4 w-4" />
                                 Agregado
@@ -205,9 +166,7 @@ export default function PaquetesPage() {
                       </div>
                     </CardContent>
                     <CardFooter className="bg-gray-50 border-t w-full">
-                      <p className="text-sm text-gray-500">
-                        * Incluye todos los libros requeridos.
-                      </p>
+                      <p className="text-sm text-gray-500">* Incluye todos los libros requeridos.</p>
                     </CardFooter>
                   </Card>
                 </motion.div>

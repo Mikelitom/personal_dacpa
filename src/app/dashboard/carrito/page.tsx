@@ -77,6 +77,7 @@ export default function CarritoPage() {
   // Función para vaciar el carrito
   const clearCart = () => {
     setCart([]);
+
   };
 
   // Función para procesar el pago
@@ -165,10 +166,14 @@ export default function CarritoPage() {
                         <Image 
                           src={item.image} 
                           alt={item.name}
+                      <div className="relative h-20 w-20 flex-shrink-0">
+                        {/* <Image
+                          src={item.imagen_url || "/placeholder.svg"}
+                          alt={item.nombre}
                           width={80}
                           height={100}
                           className="object-contain"
-                        />
+                        /> */}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium">{item.name}</h3>
@@ -181,8 +186,9 @@ export default function CarritoPage() {
                           size="icon"
                           onClick={() => updateQuantity(item.id, -1)}
                           disabled={item.quantity <= 1}
+
                         >
-                          -
+                          <Minus className="h-4 w-4" />
                         </Button>
                         <span className="w-8 text-center">{item.quantity}</span>
                         <Button 
@@ -190,7 +196,7 @@ export default function CarritoPage() {
                           size="icon"
                           onClick={() => updateQuantity(item.id, 1)}
                         >
-                          +
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                       <Button
@@ -311,6 +317,7 @@ export default function CarritoPage() {
               </Button>
             </CardFooter>
           </Card>
+
         </div>
       </div>
       
