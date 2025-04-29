@@ -145,7 +145,7 @@ export default function ReportesPage() {
   const handleHistorialReporte = (reporte: any, accion: 'descargar' | 'imprimir') => {
     // Usar el mismo endpoint que para los reportes nuevos, pero con los datos del reporte histórico
     const url = `/api/generar-pdf?tipo=${reporte.tipo}&estudianteId=${reporte.estudianteId}&fechaInicio=${reporte.fechaInicio}&fechaFin=${reporte.fechaFin}`
-    
+
     if (accion === 'imprimir') {
       // Abrir en nueva pestaña e imprimir - igual que en handleGenerarPDF
       const ventanaImpresion = window.open(url, "_blank")
@@ -204,8 +204,8 @@ export default function ReportesPage() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Estudiante</label>
-                  <Select value={estudiante} onValueChange={(value) => setEstudiante(value)}>
+                  <label htmlFor="estudiante" className="text-sm font-medium">Estudiante</label>
+                  <Select value={estudiante} onValueChange={(value) => setEstudiante(value)} >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar estudiante" />
                     </SelectTrigger>
@@ -221,12 +221,12 @@ export default function ReportesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Fecha Inicio</label>
+                  <label htmlFor="fechaInicio" className="text-sm font-medium">Fecha Inicio</label>
                   <DatePicker date={fechaInicio} setDate={setFechaInicio} />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Fecha Fin</label>
+                  <label htmlFor="fechaFin" className="text-sm font-medium">Fecha Fin</label>
                   <DatePicker date={fechaFin} setDate={setFechaFin} />
                 </div>
               </div>
@@ -294,20 +294,17 @@ export default function ReportesPage() {
                           <td className="p-3">
                             <div className="flex gap-2">
                               <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleHistorialReporte(reporte, 'descargar')}
-                              >
-                                <Download className="w-4 h-4 mr-1" />
-                                Descargar
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
+                                variant="outline"
                                 onClick={() => handleHistorialReporte(reporte, 'imprimir')}
                               >
-                                <Printer className="w-4 h-4 mr-1" />
+                                <Printer className="mr-2 h-4 w-4" />
                                 Imprimir
+                              </Button>
+                              <Button 
+                                onClick={() => handleHistorialReporte(reporte, 'descargar')}
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                Descargar
                               </Button>
                             </div>
                           </td>
@@ -321,6 +318,6 @@ export default function ReportesPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  )
+    </div>
+  )
 }
