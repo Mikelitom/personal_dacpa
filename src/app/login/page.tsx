@@ -48,8 +48,6 @@ export default function Login() {
     }
   }
   
-  
-
   return (
     <div className="flex h-screen w-full bg-gradient-to-br from-purple-50 to-purple-100">
       {/* Left side with blue background */}
@@ -77,6 +75,13 @@ export default function Login() {
             <h2 className="text-3xl font-bold text-pink-500 mb-2">Iniciar Sesion</h2> 
           </div>
           
+          {/* Mostrar mensaje de error */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+          
           <form onSubmit={handleLogin}>
             <div className="mb-6">
               <label htmlFor="username" className="block text-gray-500 mb-2">Usuario</label>
@@ -87,6 +92,7 @@ export default function Login() {
                   value={correo}
                   onChange={(e) => setCorreo(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  data-testid="username-input"
                 />
               </div>
             </div>
@@ -100,6 +106,7 @@ export default function Login() {
                   value={contraseña}
                   onChange={(e) => setContraseña(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  data-testid="password-input"
                 />
               </div>
             </div>
@@ -107,8 +114,10 @@ export default function Login() {
             <button 
               type="submit" 
               className="w-full bg-pink-300 text-white py-3 rounded-md font-medium hover:bg-pink-400 transition duration-300"
+              disabled={loading}
+              data-testid="login-button"
             >
-              LOGIN
+              {loading ? 'Procesando...' : 'LOGIN'}
             </button>
             
             <div className="flex justify-between mt-6 text-sm">
