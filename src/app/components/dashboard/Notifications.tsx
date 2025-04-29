@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Bell } from "@/app/components/shared/Icons";
 import { useEffect, useState } from "react";
-import { useToast } from "@/app/components/ui/use-toast"
+import { useToast } from "@/app/components/ui/use-toast";
 
 interface NotificationsProps {
   notifications: number;
@@ -18,39 +18,38 @@ interface Notification {
 }
 
 export function Notifications({ notifications }: NotificationsProps) {
-  const { toast } = useToast()
-  const [ loading, setLoading ] = useState(true)
-  const [ notificationsList, setNotifications ] = useState<Notification[]>([])
-  const [ error, setError ] = useState(null)
-
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [notificationsList, setNotifications] = useState<Notification[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchNoti = async () => {
       try {
         setLoading(true);
 
-        const response = await fetch('/api/notifications');
+        const response = await fetch("/api/notifications");
 
         if (!response.ok) {
-          throw new Error('Failed to fetch notification data.')
+          throw new Error("Failed to fetch notification data.");
         }
 
-        const data = await response.json()
-        setNotifications(data)
-        setLoading(false)
+        const data = await response.json();
+        setNotifications(data);
+        setLoading(false);
       } catch (error: any) {
-        setError(error.message)
-        setLoading(false)
+        setError(error.message);
+        setLoading(false);
         toast({
-          title: 'Error al cargar notificaciones',
-          description: 'No pudimos cargar las notificaciones. Por favor, intenta mas tarde',
-          variant: 'destructive'
-        })
+          title: "Error al cargar notificaciones",
+          description: "No pudimos cargar las notificaciones. Por favor, intenta más tarde.",
+          variant: "destructive",
+        });
       }
-    }
+    };
 
     fetchNoti();
-  }, [])
+  }, []);
 
   return (
     <Card className="border-gray-200 shadow-md">
@@ -62,13 +61,16 @@ export function Notifications({ notifications }: NotificationsProps) {
       </CardHeader>
       <CardContent className="p-4">
         <div className="space-y-3">
-          {notificationsList.map(notification => (
+          {loading && <div>Cargando...</div>} {/* Mensaje de carga */}
+          {error && !loading && <div className="text-red-500">No pudimos cargar las notificaciones. Por favor, intenta más tarde.</div>} {/* Mensaje de error */}
+          {!loading && !error && notificationsList.map((notification) => (
             <NotificationItem key={notification.id} notification={notification} />
           ))}
         </div>
       </CardContent>
     </Card>
   );
+  
 }
 
 interface NotificationItemProps {
@@ -77,11 +79,12 @@ interface NotificationItemProps {
 
 function NotificationItem({ notification }: NotificationItemProps) {
   // Define el color según el tipo de notificación
-  const bgColor = notification.type === "payment" 
-    ? "bg-pink-50 border-pink-200" 
-    : notification.type === "warning" 
-    ? "bg-amber-50 border-amber-200" 
-    : "bg-blue-50 border-blue-200";
+  const bgColor =
+    notification.type === "payment"
+      ? "bg-pink-50 border-pink-200"
+      : notification.type === "warning"
+      ? "bg-amber-50 border-amber-200"
+      : "bg-blue-50 border-blue-200";
 
   return (
     <div className={`p-3 rounded-lg border ${bgColor}`}>
