@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Card,
   CardHeader,
@@ -8,60 +8,19 @@ import {
 import Image from "next/image";
 import { Clock } from "lucide-react";
 import { Database } from "@/app/lib/types";
-import { useState } from "react";
 
-type Alumno = Database['public']['Tables']['Alumno']['Row']
-type Convenio = Database['public']['Tables']['Convenio']['Row']
+type Alumno = Database['public']['Tables']['Alumno']['Row'];
+type Convenio = Database['public']['Tables']['Convenio']['Row'];
 
 interface EstudiantesProp {
   hijosData: Alumno[];
   convenios: Convenio[];
 }
 
-export function Convenios({ hijosData }: EstudiantesProp) {
+export function Convenios({ hijosData, convenios }: EstudiantesProp) {
   // Filtrar alumnos que tienen convenio
   const alumnosConConvenio = hijosData.filter((hijo) => hijo.convenio);
-  const [convenios, setConvenios] = useState<Record<string, Convenio>>({})
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchConvenios = async () => {
-      const conveniosTemp: Record<string, Convenio> = {}
-      
-      if (alumnosConConvenio.length === 0) {
-        setLoading(false)
-        return
-      }
-
-      for (const alumno of alumnosConConvenio) {
-        if (alumno.convenio) {
-          try {
-            const response = await fetch(`/api/convenios/${alumno.id_alumno}/by_id`)
-  
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || 'Failed fetching convenios')
-            }
-  
-            const result = await response.json();
-            // Aquí está el cambio principal: tomar el primer elemento del array
-            if (Array.isArray(result) && result.length > 0) {
-              conveniosTemp[alumno.id_alumno.toString()] = result[0];
-            }
-          } catch (err) {
-            console.error(
-              `Error al obtener la informacion de convenio del alumno: ${alumno.nombre} ${alumno.apellido_paterno} => `, err
-            )
-          } 
-        }
-      }
-      
-      setConvenios(conveniosTemp);
-      setLoading(false)
-    }
-    fetchConvenios()
-  }, [alumnosConConvenio, hijosData])
-  
   return (
     <div>
       <Card className="border-gray-200 shadow-md">
@@ -69,16 +28,14 @@ export function Convenios({ hijosData }: EstudiantesProp) {
           <CardTitle className="text-gray-800">Convenios por Atraso</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          {loading ? (
-            <div className="text-center py-4">
-              <p className="text-gray-600">Cargando información de convenios...</p>
-            </div>
-          ) : alumnosConConvenio.length > 0 ? (
+          {alumnosConConvenio.length > 0 ? (
             <div className="space-y-6">
               {alumnosConConvenio.map((hijo) => {
-                // Acceder directamente al convenio usando el id_alumno como clave
-                const convenioAlumno = convenios[hijo.id_alumno.toString()];
-                
+                // Buscar el convenio correspondiente al id_alumno
+                const convenioAlumno = convenios.find(
+                  (convenio) => convenio.id_alumno === hijo.id_alumno
+                );
+
                 return (
                   <div
                     key={hijo.id_alumno}

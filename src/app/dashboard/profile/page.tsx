@@ -3,10 +3,6 @@
 
 import { useState, useEffect } from "react"
 import { ProfileLayout } from "@/app/dashboard/profile/ProfileLayout"
-import { supabase } from "@/app/lib/supabase"
-import { User } from "@supabase/supabase-js"
-import { useUsuario } from "../hooks/use-usuario"
-import { Usuario, Alumno, PadreFamilia } from '../types'
 import { useProfilePage } from "../hooks/use-profile-page"
 
 export default function PerfilPage() {
@@ -29,7 +25,7 @@ export default function PerfilPage() {
     )
   }
 
-  if (!usuario || !padre) {
+  if (!usuario || !padre || !alumnos || !convenios || !pagos) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <p className="text-red-500">Error cargando la información. Por favor, intente de nuevo.</p>

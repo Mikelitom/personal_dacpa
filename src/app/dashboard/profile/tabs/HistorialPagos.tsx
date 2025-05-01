@@ -1,66 +1,31 @@
-import React, { useEffect, useState } from "react";
-import { StudentData } from "@/app/types/profile";
+import React from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/app/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { Badge } from "@/app/components/ui/badge";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/app/components/ui/tabs";
 import { Button } from "@/app/components/ui/button";
-import { Database } from "@/app/lib/types";
+import { Badge } from "@/app/components/ui/badge";
+import { PagoColegiatura, Alumno } from "../../types";
 
-type Alumno = Database["public"]["Tables"]["Alumno"]["Row"];
-type PagoColegiatura = Database["public"]["Tables"]["PagoColegiatura"]["Row"];
-
-interface EstudiantesProp {
-  hijosData: Alumno[];
-  pagos: PagoColegiatura[]
+interface Props {
+  alumnos: Alumno[];
+  pagos: PagoColegiatura[];
 }
 
-function obtenerMes(fechaString: string) {
-  const fecha = new Date(fechaString);
-  return fecha.toLocaleString('es-MX', { month: 'long' });
-}
-
-export function HistorialPagos({ hijosData }: EstudiantesProp) {
-  const [loading, setLoading] = useState(true);
-  const [pagosPorAlumno, setPagosPorAlumno] = useState<
-    Record<string, PagoColegiatura[]>
-  >({});
-
-  useEffect(() => {
-    async function fetchPagos() {
-      const pagosTemp: Record<string, PagoColegiatura[]> = {};
-
-      for (const alumno of hijosData) {
-        try {
-          const response = await fetch(
-            `/api/pago-colegiatura/${alumno.id_alumno}/realizados`
-          );
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-              errorData.error || "Failed to fetch pagos realizados"
-            );
-          }
-          const data = await response.json();
-          pagosTemp[alumno.id_alumno.toString()] = data || [];
-        } catch (err) {
-          console.error(
-            `Error al traer pagos del alumno ${alumno.nombre}:`,
-            err
-          );
-          pagosTemp[alumno.id_alumno.toString()] = [];
-        }
-      }
-
-      setPagosPorAlumno(pagosTemp);
-      setLoading(false);
-    }
-    fetchPagos();
-  }, [hijosData]);
+export const HistorialPagos: React.FC<Props> = ({ alumnos, pagos }) => {
+  // Función para obtener el mes de la fecha de pago
+  const obtenerMes = (fecha: string) => {
+    const date = new Date(fecha);
+    return new Intl.DateTimeFormat("es-MX", { month: "long" }).format(date);
+  };
 
   return (
     <div>
@@ -69,27 +34,21 @@ export function HistorialPagos({ hijosData }: EstudiantesProp) {
           <CardTitle className="text-gray-800">Historial de Pagos</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <Tabs
-            defaultValue={hijosData[0].id_alumno.toString()}
-            className="w-full"
-          >
+          <Tabs defaultValue={alumnos[0]?.id_alumno.toString()} className="w-full">
             <TabsList className="w-full mb-4">
-              {hijosData.map((hijo) => (
+              {alumnos.map((alumno) => (
                 <TabsTrigger
-                  key={hijo.id_alumno}
-                  value={hijo.id_alumno.toString()}
+                  key={alumno.id_alumno}
+                  value={alumno.id_alumno.toString()}
                   className="data-[state=active]:bg-pink-600 data-[state=active]:text-white text-gray-700"
                 >
-                  {hijo.nombre.split(" ")[0]}
+                  {alumno.nombre.split(" ")[0]}
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            {hijosData.map((hijo) => (
-              <TabsContent
-                key={hijo.id_alumno}
-                value={hijo.id_alumno.toString()}
-              >
+            {alumnos.map((alumno) => (
+              <TabsContent key={alumno.id_alumno} value={alumno.id_alumno.toString()}>
                 <div className="rounded-lg border border-gray-200 overflow-hidden">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -112,9 +71,10 @@ export function HistorialPagos({ hijosData }: EstudiantesProp) {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {(pagosPorAlumno[hijo.id_alumno.toString()] || []).map(
-                        (pago, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
+                      {pagos
+                        .filter((p) => p.id_alumno === alumno.id_alumno)
+                        .map((pago) => (
+                          <tr key={pago.id_colegiatura} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                               {obtenerMes(pago.fecha_pago)}
                             </td>
@@ -142,6 +102,7 @@ export function HistorialPagos({ hijosData }: EstudiantesProp) {
                                   size="sm"
                                   className="text-pink-600 hover:text-pink-700"
                                 >
+                                  {/* Recibo */}
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -166,6 +127,7 @@ export function HistorialPagos({ hijosData }: EstudiantesProp) {
                                   size="sm"
                                   className="text-pink-600 hover:text-pink-700"
                                 >
+                                  {/* Pagar */}
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -188,8 +150,7 @@ export function HistorialPagos({ hijosData }: EstudiantesProp) {
                               )}
                             </td>
                           </tr>
-                        )
-                      )}
+                        ))}
                     </tbody>
                   </table>
                 </div>
@@ -200,4 +161,4 @@ export function HistorialPagos({ hijosData }: EstudiantesProp) {
       </Card>
     </div>
   );
-}
+};
