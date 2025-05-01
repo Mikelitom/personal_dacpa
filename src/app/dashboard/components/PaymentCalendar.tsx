@@ -8,9 +8,8 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { Calendar } from "lucide-react";
-import { Database } from "@/app/lib/types";
+import { PagoColegiatura } from "../types";
 
-type PagoColegiatura = Database["public"]["Tables"]["PagoColegiatura"]["Row"];
 interface PaymentCalendarProps {
   payments: PagoColegiatura[];
 }

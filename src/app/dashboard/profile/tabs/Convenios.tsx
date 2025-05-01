@@ -15,6 +15,7 @@ type Convenio = Database['public']['Tables']['Convenio']['Row']
 
 interface EstudiantesProp {
   hijosData: Alumno[];
+  convenios: Convenio[];
 }
 
 export function Convenios({ hijosData }: EstudiantesProp) {

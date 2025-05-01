@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
-import { Sidebar } from '../components/dashboard/Sidebar';
+import { Sidebar } from './components/Sidebar';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [supabaseClient] = useState(() => createClientComponentClient());
