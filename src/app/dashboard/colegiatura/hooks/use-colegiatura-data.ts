@@ -1,161 +1,102 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { MesColegiatura, Convenio, EstudianteUI } from "../types"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import type { Database } from "@/app/lib/types"
+import { useState } from "react"
+import { useProfilePage } from "../../hooks/use-profile-page"
 
-export function useColegiaturaData() {
-  const [estudiantes, setEstudiantes] = useState<EstudianteUI[]>([])
-  const [mesesColegiatura, setMesesColegiatura] = useState<MesColegiatura[]>([])
-  const [convenios, setConvenios] = useState<Convenio[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+export function useColegiatura() {
+  const { usuario, padre, alumnos, convenios, pagos, loading } = useProfilePage()
 
-  const supabase = createClientComponentClient<Database>()
+  const [mesesSeleccionados, setMesesSeleccionados] = useState<string[]>([])
+  const [estudianteSeleccionado, setEstudianteSeleccionado] = useState<string>("")
+  const [pagado, setPagado] = useState(false)
+  const [ticketDialogOpen, setTicketDialogOpen] = useState(false)
+  const [ticketData, setTicketData] = useState<any>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
+  // Verificar si la fecha actual es posterior a la fecha de vencimiento
+  const estaVencido = (fechaPago: string) => {
+    if (!fechaPago) return false
+    const fechaVencimiento = new Date(fechaPago)
+    const hoy = new Date()
+    return hoy > fechaVencimiento
+  }
 
-        // Fetch alumnos desde Supabase
-        const { data: alumnos, error: alumnosError } = await supabase.from("Alumno").select("*")
+  const toggleMesSeleccionado = (mesId: string) => {
+    const pago = pagos.find((p) => p.id_colegiatura.toString() === mesId)
 
-        if (alumnosError) throw alumnosError
+    // Si ya hay meses seleccionados, verificar que sean del mismo estudiante
+    if (mesesSeleccionados.length > 0) {
+      const primerMesId = mesesSeleccionados[0]
+      const primerPago = pagos.find((p) => p.id_colegiatura.toString() === primerMesId)
 
-        // Fetch historial de pagos
-        const { data: historialPagos, error: historialError } = await supabase.from("HistorialPago").select("*")
-
-        if (historialError) throw historialError
-
-        // Fetch convenios
-        const { data: conveniosData, error: conveniosError } = await supabase.from("Convenio").select("*")
-
-        if (conveniosError) throw conveniosError
-
-        // Si prefieres seguir usando datos de ejemplo para desarrollo, comenta las líneas anteriores
-        // y descomenta las siguientes:
-
-        /*
-        // Datos de ejemplo para desarrollo
-        const alumnos: Estudiante[] = [
-          {
-            id_alumno: 1,
-            id_padre: 1,
-            nombre: "Ana",
-            apellido_paterno: "Pérez",
-            apellido_materno: "González",
-            fecha_nacimiento: "2015-05-10",
-            grado: "1°A",
-            grupo: "A",
-            ciclo_escolar: "2023-2024",
-            fecha_inscripción: "2023-08-15",
-            estado: "activo",
-            convenio: true,
-          },
-          {
-            id_alumno: 2,
-            id_padre: 1,
-            nombre: "Carlos",
-            apellido_paterno: "Pérez",
-            apellido_materno: "González",
-            fecha_nacimiento: "2013-03-22",
-            grado: "3°B",
-            grupo: "B",
-            ciclo_escolar: "2023-2024",
-            fecha_inscripción: "2023-08-15",
-            estado: "activo",
-            convenio: false,
-          },
-        ]
-        */
-
-        // Crear versión UI de estudiantes
-        const uiEstudiantes: EstudianteUI[] = alumnos.map((est) => ({
-          id: est.id_alumno.toString(),
-          nombre: `${est.nombre} ${est.apellido_paterno} ${est.apellido_materno}`,
-          grado: est.grado,
-          monto: "1500.00",
-          tieneConvenio: est.convenio,
-          descuento: est.convenio ? "10%" : undefined,
-        }))
-
-        setEstudiantes(uiEstudiantes)
-
-        // Generar meses de colegiatura basados en los estudiantes y el historial de pagos
-        const mesesGenerados: MesColegiatura[] = []
-
-        const mesesNombres = [
-          "Enero",
-          "Febrero",
-          "Marzo",
-          "Abril",
-          "Mayo",
-          "Agosto",
-          "Septiembre",
-          "Octubre",
-          "Noviembre",
-          "Diciembre",
-        ]
-
-        // Aquí puedes usar historialPagos para generar los meses con datos reales
-        // Por ahora, generamos datos de ejemplo
-        uiEstudiantes.forEach((est) => {
-          mesesNombres.forEach((mes, index) => {
-            const esPagado = index < 4 // Los primeros 4 meses están pagados
-            const mesId = `${mes.toLowerCase().substring(0, 3)}${est.id === "1" ? "" : est.id}`
-
-            mesesGenerados.push({
-              id: mesId,
-              nombre: mes,
-              monto: 1500,
-              estado: esPagado ? "pagado" : "pendiente",
-              fechaPago: esPagado ? `${index + 8}/0${index + 1}/2024` : undefined,
-              vencimiento: !esPagado ? `10/${index < 7 ? "0" : ""}${index + 1}/2024` : undefined,
-              incluye: mes === "Enero" ? "Libros" : undefined,
-              estudiante: est.id,
-              nombreEstudiante: est.nombre,
-              interes: mes === "Marzo" ? 150 : undefined,
-            })
-          })
-        })
-
-        setMesesColegiatura(mesesGenerados)
-
-        // Procesar datos de convenios
-        const conveniosUI = conveniosData.map((convenio) => {
-          // Buscar el alumno correspondiente
-          const alumno = alumnos.find((a) => a.id_alumno === convenio.id_alumno)
-          const nombreCompleto = alumno
-            ? `${alumno.nombre} ${alumno.apellido_paterno} ${alumno.apellido_materno}`
-            : "Estudiante"
-
-          return {
-            ...convenio,
-            estudiante: nombreCompleto,
-            tipo: "Convenio por atraso",
-            descripcion: `Descuento del ${convenio.porcentaje_incremento}% en colegiaturas pendientes por pago anticipado`,
-            fechaFin: new Date(
-              new Date(convenio.fecha_inicio).getTime() + 30 * 24 * 60 * 60 * 1000,
-            ).toLocaleDateString(),
-          }
-        })
-
-        setConvenios(conveniosUI)
-      } catch (error) {
-        console.error("Error al cargar datos:", error)
-      } finally {
-        setIsLoading(false)
+      if (primerPago && pago && primerPago.id_alumno !== pago.id_alumno) {
+        alert("No se pueden mezclar colegiaturas de diferentes estudiantes en un mismo pago.")
+        return
       }
+
+      // Establecer el estudiante automáticamente
+      if (pago && !estudianteSeleccionado) {
+        setEstudianteSeleccionado(pago.id_alumno.toString())
+      }
+    } else if (pago) {
+      // Si es el primer mes seleccionado, establecer el estudiante
+      setEstudianteSeleccionado(pago.id_alumno.toString())
     }
 
-    fetchData()
-  }, [supabase])
+    if (mesesSeleccionados.includes(mesId)) {
+      setMesesSeleccionados(mesesSeleccionados.filter((id) => id !== mesId))
+    } else {
+      setMesesSeleccionados([...mesesSeleccionados, mesId])
+    }
+  }
+
+  const calcularTotal = () => {
+    let total = 0
+    mesesSeleccionados.forEach((mesId) => {
+      const pago = pagos.find((p) => p.id_colegiatura.toString() === mesId)
+      if (pago) {
+        total += pago.monto
+        // Si está vencido, calcular interés
+        if (pago.estado === "pendiente" && estaVencido(pago.fecha_pago)) {
+          const interes = pago.monto * 0.1 // 10% de interés
+          total += interes
+        }
+      }
+    })
+    return total
+  }
+
+  const handlePagoExitoso = (ticketInfo: any) => {
+    setTicketData(ticketInfo)
+    setTicketDialogOpen(true)
+
+    // Resetear después de mostrar confirmación
+    setTimeout(() => {
+      setPagado(true)
+    }, 500)
+  }
+
+  const handleNewPayment = () => {
+    setPagado(false)
+    setMesesSeleccionados([])
+    setEstudianteSeleccionado("")
+  }
 
   return {
-    estudiantes,
-    mesesColegiatura,
+    usuario,
+    padre,
+    alumnos,
     convenios,
-    isLoading,
+    pagos,
+    loading,
+    mesesSeleccionados,
+    estudianteSeleccionado,
+    pagado,
+    ticketDialogOpen,
+    ticketData,
+    toggleMesSeleccionado,
+    calcularTotal,
+    handlePagoExitoso,
+    handleNewPayment,
+    setTicketDialogOpen,
   }
 }

@@ -1,15 +1,15 @@
 "use client"
 
-import { CheckCircle2 } from "lucide-react"
-import { Card, CardContent } from "@/app/components/ui/card"
 import { Button } from "@/app/components/ui/button"
+import { Card, CardContent } from "@/app/components/ui/card"
+import { CheckCircle2 } from "lucide-react"
 
-interface SuccessPaymentProps {
+interface PaymentSuccessProps {
   total: number
-  onReset: () => void
+  onNewPayment: () => void
 }
 
-export default function SuccessPayment({ total, onReset }: SuccessPaymentProps) {
+export function PaymentSuccess({ total, onNewPayment }: PaymentSuccessProps) {
   return (
     <Card className="max-w-md mx-auto border-gray-200 shadow-md">
       <CardContent className="pt-6 flex flex-col items-center">
@@ -20,7 +20,7 @@ export default function SuccessPayment({ total, onReset }: SuccessPaymentProps) 
         <p className="text-center mt-2 text-gray-700">
           El pago de colegiatura por ${total.toFixed(2)} ha sido procesado correctamente.
         </p>
-        <Button className="mt-6 bg-pink-600 hover:bg-pink-700 text-white" onClick={onReset}>
+        <Button className="mt-6 bg-pink-600 hover:bg-pink-700 text-white" onClick={onNewPayment}>
           Realizar otro pago
         </Button>
       </CardContent>

@@ -54,7 +54,7 @@ export function ProfileLayout({
         )}
 
         {activeTab === "pagos" && (
-          <HistorialPagos hijosData={alumnos} pagos={pagos}/>
+          <HistorialPagos alumnos={alumnos} pagos={pagos}/>
         )}
 
         {activeTab === "convenios" && (
