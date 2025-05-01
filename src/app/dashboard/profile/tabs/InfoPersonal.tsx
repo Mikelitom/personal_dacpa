@@ -51,49 +51,88 @@ export function InfoPersonal({
     });
   };
 
-  async function updateProfile(usuario: Usuario, padre: PadreFamilia) {
-    try {
-      setLoading(true)
+  // Modificación en la función updateProfile dentro de InfoPersonal.tsx
 
-      const resUsuario = await fetch('/api/usuario/update', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario })
-      })
+async function updateProfile(usuario: Usuario, padre: PadreFamilia) {
+  try {
+    console.log("[updateProfile] Iniciando actualización del perfil...");
+    setLoading(true);
 
-      console.log("Usuario enviado: ", usuario)
-  
-      if (!resUsuario.ok) {
-        console.error("Respuesta: ", await resUsuario.json())
-        throw new Error("Error al actualizar el usuario.")
-      }
-  
-      const resPadre = await fetch('/api/padre-familia/update', {
-        method: 'PUT',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ padre }) 
-      })
-  
-      if (!resPadre.ok) {
-        throw new Error("Error actualizando padre.")
-      } 
-  
-      console.log("Perfil actualizado con exito.")
-    } catch (error) {
-      console.error("Error actualizando el perfil: ", error)
-    } finally {
-      setLoading(false);
+    // Asegurarse de que todos los campos obligatorios estén presentes
+    if (!usuario.id_usuario || !padre.id_padre) {
+      console.error("[updateProfile] Error: Falta ID de usuario o padre");
+      throw new Error("Datos incompletos: falta identificador");
     }
-  }
 
+    // Enviamos solo los campos que queremos actualizar
+    const usuarioData = {
+      id_usuario: usuario.id_padre,
+      nombre_completo: usuario.nombre_completo,
+      correo: usuario.correo,
+      telefono: usuario.telefono
+    };
+
+    console.log("[updateProfile] Enviando datos del usuario:", usuarioData);
+    const resUsuario = await fetch('/api/usuario/update', {
+      method: "PATCH", // Cambiado a PATCH siguiendo convenciones REST
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(usuarioData)
+    });
+
+    console.log("[updateProfile] Respuesta del servidor para usuario:", resUsuario.status);
+    if (!resUsuario.ok) {
+      const errorData = await resUsuario.json();
+      console.error("[updateProfile] Error al actualizar usuario:", errorData);
+      throw new Error(`Error al actualizar el usuario: ${errorData.error || 'Datos inválidos'}`);
+    }
+
+    // Enviamos los datos del padre en el formato correcto
+    const padreData = {
+      id_padre: padre.id_padre,
+      celular: padre.celular,
+      direccion: padre.direccion,
+      ciudad: padre.ciudad,
+      codigo_postal: padre.codigo_postal,
+      telefono_oficina: padre.telefono_oficina
+    };
+
+    console.log("[updateProfile] Enviando datos del padre de familia:", padreData);
+    const resPadre = await fetch('/api/padre-familia/update', {
+      method: 'PATCH', // Cambiado a PATCH siguiendo convenciones REST
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(padreData) 
+    });
+
+    console.log("[updateProfile] Respuesta del servidor para padre de familia:", resPadre.status);
+    if (!resPadre.ok) {
+      const errorData = await resPadre.json();
+      console.error("[updateProfile] Error al actualizar padre de familia:", errorData);
+      throw new Error(`Error actualizando padre: ${errorData.error || 'Datos inválidos'}`);
+    } 
+
+    console.log("[updateProfile] Perfil actualizado con éxito.");
+    return true;
+  } catch (error) {
+    console.error("[updateProfile] Error capturado en catch:", error);
+    throw error; // Re-lanzamos el error para manejarlo en saveChanges
+  } finally {
+    setLoading(false);
+    console.log("[updateProfile] Finalizó ejecución.");
+  }
+}
+  
   // Función para guardar cambios
   const saveChanges = async () => {
     setIsSubmitting(true);
     try {
-      await updateProfile(usuarioEdit, padreEdit);
-      setEditMode(false);
+      const success = await updateProfile(usuarioEdit, padreEdit);
+      if (success) {
+        // Actualizamos el estado local solo si la actualización fue exitosa
+        setEditMode(false);
+      }
     } catch (error) {
       console.error("Error al guardar los cambios:", error);
+      alert("Error al guardar los cambios. Por favor, intente nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -349,7 +388,7 @@ function InfoItem({ icon, label, value }: InfoItemProps) {
       {icon}
       <div>
         <p className="text-sm text-gray-500">{label}</p>
-        <p className="font-medium text-gray-800">{value}</p>
+        <p className="font-medium text-gray-800">{value || "-"}</p>
       </div>
     </div>
   );
