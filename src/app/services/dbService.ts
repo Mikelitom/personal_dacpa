@@ -285,6 +285,8 @@ export const userService = {
     if (error) {
       throw new Error(`Error actualizando usuario: ${error.message}`)
     }
+
+    return { message: 'Usuario actualizado correctamente. '}
   },
   async updatePadre(padre: PadreFamilia) {
     if (!padre.id_padre) {
@@ -300,6 +302,6 @@ export const userService = {
       throw new Error(`Error actualizando padre: ${error.message}`)
     }
 
-    return { message: 'Usuario actualizado correctamente. '}
+    return { message: 'Padre actualizado correctamente. '}
   }
 };

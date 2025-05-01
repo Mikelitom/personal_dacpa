@@ -14,19 +14,15 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { User, Mail, Phone, MapPin, Edit, Save, X } from "lucide-react";
 import { Database } from "@/app/lib/types";
-
-type PadreFamilia = Database["public"]["Tables"]["PadreFamilia"]["Row"];
-type Usuario = Database["public"]["Tables"]["Usuario"]["Row"];
+import { supabase } from "@/app/lib/supabase";
+import type { PadreFamilia, Usuario } from "../../types";
 
 interface InfoPersonalProps {
   usuario: Usuario;
   padre: PadreFamilia;
 }
 
-export function InfoPersonal({
-  usuario,
-  padre
-}: InfoPersonalProps) {
+export function InfoPersonal({ usuario, padre }: InfoPersonalProps) {
   const [usuarioEdit, setUsuarioEdit] = useState<Usuario>({ ...usuario });
   const [padreEdit, setPadreEdit] = useState<PadreFamilia>({ ...padre });
   const [editMode, setEditMode] = useState(false);
@@ -53,65 +49,53 @@ export function InfoPersonal({
 
   // Modificación en la función updateProfile dentro de InfoPersonal.tsx
 
-async function updateProfile(usuario: Usuario, padre: PadreFamilia) {
-  try {
-    console.log("[updateProfile] Iniciando actualización del perfil...");
-    setLoading(true);
+  async function updateProfile(usuario: Usuario, padre: PadreFamilia) {
+    try {
+      console.log("[updateProfile] Iniciando actualización del perfil...");
+      setLoading(true);
 
-    // Asegurarse de que todos los campos obligatorios estén presentes
-    if (!usuario.id_usuario || !padre.id_padre) {
-      console.error("[updateProfile] Error: Falta ID de usuario o padre");
-      throw new Error("Datos incompletos: falta identificador");
+      if (!usuario.id_usuario || !padre.id_padre) {
+        throw new Error("Faltan IDs requeridos");
+      }
+
+      const { error: usuarioError } = await supabase
+        .from("Usuario")
+        .update({
+          nombre_completo: usuario.nombre_completo,
+          correo: usuario.correo,
+          telefono: usuario.telefono,
+        })
+        .eq("id_usuario", usuario.id_usuario);
+
+      if (usuarioError) {
+        throw new Error(`Error actualizando usuario: ${usuarioError.message}`);
+      }
+
+      const { error: padreError } = await supabase
+        .from("PadreFamilia")
+        .update({
+          celular: padre.celular,
+          direccion: padre.direccion,
+          ciudad: padre.ciudad,
+          codigo_postal: padre.codigo_postal,
+          telefono_oficina: padre.telefono_oficina,
+        })
+        .eq("id_padre", padre.id_padre);
+
+      if (padreError) {
+        throw new Error(`Error actualizando padre: ${padreError.message}`);
+      }
+
+      console.log("[updateProfile] Perfil actualizado con éxito.");
+      return true;
+    } catch (error) {
+      console.error("[updateProfile] Error:", error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-
-    // Enviamos solo los campos que queremos actualizar
-    const usuarioData = {
-      id_usuario: usuario.id_usuario,
-      nombre_completo: usuario.nombre_completo,
-      correo: usuario.correo,
-      telefono: usuario.telefono
-    };
-
-    console.log("[updateProfile] Enviando datos del usuario:", usuarioData);
-    const resUsuario = await fetch('/api/usuario/update', {
-      method: "PATCH", // Cambiado a PATCH siguiendo convenciones REST
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(usuarioData)
-    });
-
-    console.log("[updateProfile] Respuesta del servidor para usuario:", resUsuario.status);
-    if (!resUsuario.ok) {
-      const errorData = await resUsuario.json();
-      console.error("[updateProfile] Error al actualizar usuario:", errorData);
-      throw new Error(`Error al actualizar el usuario: ${errorData.error || 'Datos inválidos'}`);
-    }
-
-    // Enviamos los datos del padre en el formato correcto
-    console.log("[updateProfile] Enviando datos del padre de familia:", padre);
-    const resPadre = await fetch('/api/padre-familia/update', {
-      method: 'PATCH', // Cambiado a PATCH siguiendo convenciones REST
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(padre) 
-    });
-
-    console.log("[updateProfile] Respuesta del servidor para padre de familia:", resPadre.status);
-    if (!resPadre.ok) {
-      const errorData = await resPadre.json();
-      console.error("[updateProfile] Error al actualizar padre de familia:", errorData);
-      throw new Error(`Error actualizando padre: ${errorData.error || 'Datos inválidos'}`);
-    } 
-
-    console.log("[updateProfile] Perfil actualizado con éxito.");
-    return true;
-  } catch (error) {
-    console.error("[updateProfile] Error capturado en catch:", error);
-    throw error; // Re-lanzamos el error para manejarlo en saveChanges
-  } finally {
-    setLoading(false);
-    console.log("[updateProfile] Finalizó ejecución.");
   }
-}
-  
+
   // Función para guardar cambios
   const saveChanges = async () => {
     setIsSubmitting(true);
