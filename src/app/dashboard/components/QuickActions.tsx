@@ -46,8 +46,8 @@ export function QuickActions() {
             <Button
               className={`w-full justify-start transition-all duration-200 ease-in-out ${
                 action.primary
-                  ? "bg-pink-600 hover:bg-pink-700 hover:shadow-md hover:shadow-pink-200 text-white group-hover:translate-x-1"
-                  : "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm group-hover:translate-x-1"
+                  ? "bg-pink-600 hover:bg-pink-700 cursor-pointer hover:shadow-md hover:shadow-pink-200 text-white group-hover:translate-x-1"
+                  : "border-gray-200 text-gray-700 cursor-pointer hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm group-hover:translate-x-1"
               }`}
               variant={action.primary ? "default" : "outline"}
             >

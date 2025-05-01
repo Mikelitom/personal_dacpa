@@ -39,7 +39,7 @@ export function Sidebar({ className, onCloseMobileMenu }: SidebarProps) {
   const pathname = usePathname();
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
   const [notificationsCount, setNotificationsCount] = useState(4);
-  const [carritoCount, setCarritoCount] = useState(3);
+  const [carritoCount, setCarritoCount] = useState(0);
 
   // Definición dinámica de los ítems de navegación
   const navItems: NavItem[] = [

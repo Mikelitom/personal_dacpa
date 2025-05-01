@@ -131,10 +131,9 @@ export const userService = {
     const { data, error } = await supabase
       .from("Articulo")
       .select("*")
-      .eq('categoria', categoria)
+      .eq("categoria", categoria);
 
-    if (error)
-      throw new Error(`Error fetching ${categoria}: ${error.message}`);
+    if (error) throw new Error(`Error fetching ${categoria}: ${error.message}`);
 
     return data || [];
   },
@@ -231,6 +230,17 @@ export const userService = {
 
     return data || [];
   },
+  async getPagosByAlumno(id: string): Promise<PagoColegiatura[]> {
+    const { data, error } = await supabase
+      .from("PagoColegiatura")
+      .select("*")
+      .eq("id_alumno", id)
+      .order("fecha_pago", { ascending: true });
+
+    if (error) throw new Error("[dbService] Error fetching payments");
+
+    return data || [];
+  },
   async getSiguientePagoAlumno(id: string): Promise<PagoColegiatura> {
     const today = new Date().toISOString();
 
@@ -262,4 +272,32 @@ export const userService = {
 
     return data || [];
   },
+  async updateUsuario(usuario: Usuario) {
+    if (!usuario.id_usuario) {
+      throw new Error('El ID usuario es necesario para actualizar')
+    }
+
+    const { error } = await supabase
+      .from('Usuario')
+      .update(usuario)
+      .eq('id_usuario', usuario.id_usuario)
+
+    if (error) {
+      throw new Error(`Error actualizando usuario: ${error.message}`)
+    }
+  },
+  async updatePadre(padre: PadreFamilia) {
+    if (!padre.id_padre) {
+      throw new Error('El ID padre es necesario para actualizar')
+    }
+
+    const { error } = await supabase
+      .from('padre')
+      .update(padre)
+      .eq('id_padre', padre.id_padre)
+
+    if (error) {
+      throw new Error(`Error actualizando padre: ${error.message}`)
+    }
+  }
 };

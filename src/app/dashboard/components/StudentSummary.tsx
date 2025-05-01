@@ -1,13 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { Database } from "@/app/lib/types";
-
-type Alumno = Database['public']['Tables']['Alumno']['Row']
+import type { Alumno } from "../types";
 
 interface StudentSummaryProps {
   students: Alumno[];
@@ -56,8 +53,8 @@ function StudentItem({ student }: StudentItemProps) {
         />
       </div> */}
       <div>
-        <h4 className="font-medium text-gray-800">{student.nombre}</h4>
-        <p className="text-sm text-gray-500">{student.grado}</p>
+        <h4 className="font-medium text-gray-800">{student.nombre} {student.apellido_paterno}</h4>
+        <p className="text-sm text-gray-500">{student.grado} {student.grupo}</p>
         {student.convenio ? (
           <Badge className="mt-1 bg-pink-100 text-pink-700 border-pink-200">
             {student.convenio}

@@ -2,31 +2,30 @@
 "use client"
 
 import { Dispatch, SetStateAction } from "react"
-import { SidePanel } from "./SidePanel"
 import { InfoPersonal } from "./tabs/InfoPersonal"
 import { Estudiantes } from "./tabs/Estudiantes"
 import { HistorialPagos } from './tabs/HistorialPagos'
 import { Convenios } from "./tabs/Convenios"
 import { Database } from "@/app/lib/types"
-
-type PadreFamilia = Database['public']['Tables']['PadreFamilia']['Row']
-type Usuario = Database['public']['Tables']['Usuario']['Row']
-type Alumno = Database['public']['Tables']['Alumno']['Row']
+import { SidePanel } from "./SidePanel"
+import { PadreFamilia, Usuario, Alumno, Convenio, PagoColegiatura } from "../types"
 
 interface ProfileLayoutProps {
-  usuarioData: Usuario;
-  padreData: PadreFamilia;
-  updateProfile: (nuevoUsuario: Usuario, nuevoPadre: PadreFamilia) => Promise<void>;
-  alumnosData: Alumno[];
+  usuario: Usuario;
+  padre: PadreFamilia;
+  alumnos: Alumno[];
+  convenios: Convenio[];
+  pagos: PagoColegiatura[];
   activeTab: string;
   setActiveTab: Dispatch<SetStateAction<string>>;
 }
 
 export function ProfileLayout({ 
-  usuarioData,
-  padreData, 
-  updateProfile, 
-  alumnosData, 
+  usuario,
+  padre, 
+  alumnos, 
+  convenios,
+  pagos,
   activeTab, 
   setActiveTab 
 }: ProfileLayoutProps) {
@@ -35,7 +34,7 @@ export function ProfileLayout({
       {/* Panel izquierdo - Información del padre */}
       <div className="lg:col-span-1">
         <SidePanel 
-          nombre={padreData.nombre || usuarioData.nombre_completo} 
+          nombre={padre.nombre || usuario.nombre_completo} 
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
         />
@@ -45,22 +44,21 @@ export function ProfileLayout({
       <div className="lg:col-span-3">
         {activeTab === "info" && (
           <InfoPersonal 
-            usuarioData={usuarioData} 
-            padreData={padreData} 
-            updateProfile={updateProfile} 
+            usuario={usuario} 
+            padre={padre} 
           />
         )}
 
         {activeTab === "estudiantes" && (
-          <Estudiantes hijosData={alumnosData} />
+          <Estudiantes hijosData={alumnos} />
         )}
 
         {activeTab === "pagos" && (
-          <HistorialPagos hijosData={alumnosData} />
+          <HistorialPagos hijosData={alumnos} pagos={pagos}/>
         )}
 
         {activeTab === "convenios" && (
-          <Convenios hijosData={alumnosData} />
+          <Convenios hijosData={alumnos} convenios={convenios}/>
         )}
       </div>
     </div>

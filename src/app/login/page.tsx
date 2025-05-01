@@ -1,133 +1,111 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Database } from "../lib/types";
+import { handleLogin } from "../lib/auth";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import Link from "next/link";
 
 export default function Login() {
   const router = useRouter();
-  const [ loading, setLoading ] = useState(false);
-  const [ correo, setCorreo ] = useState('');
-  const [ contraseña, setContraseña ] = useState('');
-  const [ error, setError ] = useState<string | null>(null);
-  const supabase = createClientComponentClient<Database>();
-  
-  const handleLogin = async (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [correo, setCorreo] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
-  
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: correo,
-        password: contraseña
-      });
-  
-      if (authError) throw authError;
-  
-      const { data: userData, error: userError } = await supabase
-        .from('Usuario')
-        .select('rol, nombre_completo, estado')
-        .eq('correo', correo)
-        .single();
-        
-      if (userError) throw userError;
-  
-      if (userData.estado !== 'activo') {
-        throw new Error('Tu cuenta está inactiva. Contacta al administrador.');
-      }
-  
-      // Redirigir forzando reload completo para que el middleware vea las cookies nuevas
-      const dashboardUrl = userData.rol === 'admin' ? '/dashboard-admin' : '/dashboard';
-      router.replace(dashboardUrl);
-  
-    } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
-    } finally {
-      setLoading(false);
+
+    // Validaciones de campos vacíos
+    if (!correo || !password) {
+      setError("Debes ingresar tu correo y contraseña.");
+      return;
     }
-  }
-  
+
+    setLoading(true);
+    const result = await handleLogin({ email: correo, password });
+    setLoading(false);
+
+    if (!result.success) {
+      setError(result.error || 'Error desconocido.');
+      return;
+    }
+
+    switch (result.rol) {
+      case "admin":
+        router.push("/admin_dashboard");
+        break;
+      case "padre":
+        router.push('/dashboard');
+        break;
+      default:
+        router.push('/dashboard');
+    }
+  };
+
   return (
-    <div className="flex h-screen w-full bg-gradient-to-br from-purple-50 to-purple-100">
-      {/* Left side with blue background */}
-      <div className="hidden md:flex md:w-2/5 flex-col bg-gradient-to-b from-pink-400 to-pink-500 text-white p-10 relative overflow-hidden">
-               
-        {/* Content */}
-        <div className="relative z-10">
-          <div className="font-bold text-2xl mb-16">COLEGIO DAC</div>
-          <h1 className="text-4xl font-bold mb-4">Bienvenidos</h1>
-          
-          <p className="mb-8 opacity-90">
-            
-          </p>
-          
-          <div className="mt-auto pt-40">
-            <p className="opacity-90">Despertar al Conocimiento</p>
-          </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <div className="w-full max-w-md p-6">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Sistema de Control Escolar</h1>
+          <p className="text-gray-600 mt-2">Accede a tu cuenta para continuar</p>
         </div>
-      </div>
-      
-      {/* Right side with login form */}
-      <div className="w-full md:w-3/5 flex justify-center items-center p-6">
-        <div className="w-full max-w-md">
-          <div className="text-center md:text-left">
-            <h2 className="text-3xl font-bold text-pink-500 mb-2">Iniciar Sesion</h2> 
-          </div>
-          
-          {/* Mostrar mensaje de error */}
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
-          
-          <form onSubmit={handleLogin}>
-            <div className="mb-6">
-              <label htmlFor="username" className="block text-gray-500 mb-2">Usuario</label>
-              <div className="relative">
-                <input 
-                  type="text" 
-                  id="username" 
+
+        <div className="bg-white border border-gray-200 rounded-md shadow-sm p-6">
+          <form onSubmit={onSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Usuario
+                </label>
+                <Input
+                  id="email"
+                  type="text"
+                  placeholder="Ingrese su usuario"
                   value={correo}
                   onChange={(e) => setCorreo(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  data-testid="username-input"
+                  className="w-full border-gray-300 focus:border-pink-500 focus:ring-pink-500 text-gray-900"
                 />
               </div>
-            </div>
-            
-            <div className="mb-6">
-              <label htmlFor="password" className="block text-gray-500 mb-2">Contraseña</label>
-              <div className="relative">
-                <input 
-                  type="password" 
-                  id="password" 
-                  value={contraseña}
-                  onChange={(e) => setContraseña(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  data-testid="password-input"
-                />
-              </div>
-            </div>
-            
-            <button 
-              type="submit" 
-              className="w-full bg-pink-300 text-white py-3 rounded-md font-medium hover:bg-pink-400 transition duration-300"
-              disabled={loading}
-              data-testid="login-button"
-            >
-              {loading ? 'Procesando...' : 'LOGIN'}
-            </button>
-            
-            <div className="flex justify-between mt-6 text-sm">
               <div>
-                <span className="text-gray-500">New User?</span>{" "}
-                <a href="#" className="text-blue-500 hover:underline">Signup</a>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Contraseña
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Ingrese su contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border-gray-300 focus:border-pink-500 focus:ring-pink-500 text-gray-900"
+                />
               </div>
-              <a href="#" className="text-gray-400 hover:underline">Forgot your password?</a>
+
+              {error && (
+                <p className="text-red-600 text-sm">{error}</p>
+              )}
+
+              <div className="flex items-center justify-end">
+                <Link href="#" className="text-sm text-pink-600 hover:text-pink-800">
+                  ¿Olvidó su contraseña?
+                </Link>
+              </div>
+              <div>
+                <Button
+                  type="submit"
+                  className="w-full bg-pink-600 hover:bg-pink-700 cursor-pointer text-white"
+                  disabled={loading}
+                >
+                  {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+                </Button>
+              </div>
             </div>
           </form>
+        </div>
+
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">© 2024 Colegio Despertar al Conocimiento</p>
         </div>
       </div>
     </div>

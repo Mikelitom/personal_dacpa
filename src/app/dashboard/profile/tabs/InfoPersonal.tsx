@@ -1,66 +1,110 @@
 // src/components/perfil/tabs/InfoPersonal.tsx
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/app/components/ui/card"
-import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { Label } from "@/app/components/ui/label"
-import { User, Mail, Phone, MapPin, Edit, Save, X } from "lucide-react"
-import { Database } from "@/app/lib/types"
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/app/components/ui/card";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Label } from "@/app/components/ui/label";
+import { User, Mail, Phone, MapPin, Edit, Save, X } from "lucide-react";
+import { Database } from "@/app/lib/types";
 
-type PadreFamilia = Database['public']['Tables']['PadreFamilia']['Row']
-type Usuario = Database['public']['Tables']['Usuario']['Row']
+type PadreFamilia = Database["public"]["Tables"]["PadreFamilia"]["Row"];
+type Usuario = Database["public"]["Tables"]["Usuario"]["Row"];
 
 interface InfoPersonalProps {
-  usuarioData: Usuario;
-  padreData: PadreFamilia;
-  updateProfile: (nuevoUsuario: Usuario, nuevoPadre: PadreFamilia) => Promise<void>;
+  usuario: Usuario;
+  padre: PadreFamilia;
 }
 
-export function InfoPersonal({ usuarioData, padreData, updateProfile }: InfoPersonalProps) {
-  const [editMode, setEditMode] = useState(false)
-  const [editUsuario, setEditUsuario] = useState<Usuario>({ ...usuarioData })
-  const [editPadre, setEditPadre] = useState<PadreFamilia>({ ...padreData })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function InfoPersonal({
+  usuario,
+  padre
+}: InfoPersonalProps) {
+  const [usuarioEdit, setUsuarioEdit] = useState<Usuario>({ ...usuario });
+  const [padreEdit, setPadreEdit] = useState<PadreFamilia>({ ...padre });
+  const [editMode, setEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Función para manejar cambios en los campos de usuario
   const handleUsuarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setEditUsuario({
-      ...editUsuario,
+    const { name, value } = e.target;
+    setUsuarioEdit({
+      ...usuarioEdit,
       [name]: value,
-    })
-  }
+    });
+  };
 
   // Función para manejar cambios en los campos de padre
   const handlePadreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setEditPadre({
-      ...editPadre,
+    const { name, value } = e.target;
+    setPadreEdit({
+      ...padreEdit,
       [name]: value,
-    })
+    });
+  };
+
+  async function updateProfile(usuario: Usuario, padre: PadreFamilia) {
+    try {
+      setLoading(true)
+
+      const resUsuario = await fetch('/api/usuario/update', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario })
+      })
+
+      console.log("Usuario enviado: ", usuario)
+  
+      if (!resUsuario.ok) {
+        console.error("Respuesta: ", await resUsuario.json())
+        throw new Error("Error al actualizar el usuario.")
+      }
+  
+      const resPadre = await fetch('/api/padre-familia/update', {
+        method: 'PUT',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ padre }) 
+      })
+  
+      if (!resPadre.ok) {
+        throw new Error("Error actualizando padre.")
+      } 
+  
+      console.log("Perfil actualizado con exito.")
+    } catch (error) {
+      console.error("Error actualizando el perfil: ", error)
+    } finally {
+      setLoading(false);
+    }
   }
 
   // Función para guardar cambios
   const saveChanges = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      await updateProfile(editUsuario, editPadre)
-      setEditMode(false)
+      await updateProfile(usuarioEdit, padreEdit);
+      setEditMode(false);
     } catch (error) {
-      console.error("Error al guardar los cambios:", error)
+      console.error("Error al guardar los cambios:", error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Función para cancelar edición
   const cancelEdit = () => {
-    setEditUsuario({ ...usuarioData })
-    setEditPadre({ ...padreData })
-    setEditMode(false)
-  }
+    setUsuarioEdit({ ...usuario });
+    setPadreEdit({ ...padre });
+    setEditMode(false);
+  };
 
   return (
     <Card className="border-gray-200 shadow-md">
@@ -68,7 +112,12 @@ export function InfoPersonal({ usuarioData, padreData, updateProfile }: InfoPers
         <div className="flex justify-between items-center">
           <CardTitle className="text-gray-800">Información Personal</CardTitle>
           {!editMode && (
-            <Button variant="outline" size="sm" onClick={() => setEditMode(true)} className="text-gray-700">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditMode(true)}
+              className="text-gray-700"
+            >
               <Edit className="h-4 w-4 mr-2" />
               Editar
             </Button>
@@ -77,36 +126,41 @@ export function InfoPersonal({ usuarioData, padreData, updateProfile }: InfoPers
       </CardHeader>
       <CardContent className="p-6">
         {editMode ? (
-          <EditForm 
-            editUsuario={editUsuario} 
-            editPadre={editPadre} 
-            handleUsuarioChange={handleUsuarioChange} 
-            handlePadreChange={handlePadreChange} 
+          <EditForm
+            editUsuario={usuarioEdit}
+            editPadre={padreEdit}
+            handleUsuarioChange={handleUsuarioChange}
+            handlePadreChange={handlePadreChange}
           />
         ) : (
-          <InfoDisplay padreData={padreData} usuarioData={usuarioData} />
+          <InfoDisplay padreData={padre} usuarioData={usuario} />
         )}
       </CardContent>
       {editMode && (
         <CardFooter className="bg-gray-50 border-t border-gray-100 p-4">
           <div className="flex gap-2 w-full justify-end">
-            <Button onClick={cancelEdit} variant="outline" className="text-gray-700" disabled={isSubmitting}>
+            <Button
+              onClick={cancelEdit}
+              variant="outline"
+              className="text-gray-700"
+              disabled={isSubmitting}
+            >
               <X className="h-4 w-4 mr-2" />
               Cancelar
             </Button>
-            <Button 
-              onClick={saveChanges} 
+            <Button
+              onClick={saveChanges}
               className="bg-pink-600 hover:bg-pink-700 text-white"
               disabled={isSubmitting}
             >
               <Save className="h-4 w-4 mr-2" />
-              {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+              {isSubmitting ? "Guardando..." : "Guardar cambios"}
             </Button>
           </div>
         </CardFooter>
       )}
     </Card>
-  )
+  );
 }
 
 interface EditFormProps {
@@ -116,7 +170,12 @@ interface EditFormProps {
   handlePadreChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChange }: EditFormProps) {
+function EditForm({
+  editUsuario,
+  editPadre,
+  handleUsuarioChange,
+  handlePadreChange,
+}: EditFormProps) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -127,7 +186,7 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
           <Input
             id="nombre_completo"
             name="nombre_completo"
-            value={editUsuario.nombre_completo}
+            value={editUsuario.nombre_completo || ""}
             onChange={handleUsuarioChange}
             className="border-gray-200 text-gray-800"
           />
@@ -140,7 +199,7 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
             id="correo"
             name="correo"
             type="email"
-            value={editUsuario.correo}
+            value={editUsuario.correo || ""}
             onChange={handleUsuarioChange}
             className="border-gray-200 text-gray-800"
           />
@@ -152,7 +211,7 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
           <Input
             id="telefono"
             name="telefono"
-            value={editUsuario.telefono}
+            value={editUsuario.telefono || ""}
             onChange={handleUsuarioChange}
             className="border-gray-200 text-gray-800"
           />
@@ -164,7 +223,7 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
           <Input
             id="celular"
             name="celular"
-            value={editPadre.celular}
+            value={editPadre.celular || ""}
             onChange={handlePadreChange}
             className="border-gray-200 text-gray-800"
           />
@@ -176,7 +235,7 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
           <Input
             id="direccion"
             name="direccion"
-            value={editPadre.direccion}
+            value={editPadre.direccion || ""}
             onChange={handlePadreChange}
             className="border-gray-200 text-gray-800"
           />
@@ -188,7 +247,7 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
           <Input
             id="ciudad"
             name="ciudad"
-            value={editPadre.ciudad}
+            value={editPadre.ciudad || ""}
             onChange={handlePadreChange}
             className="border-gray-200 text-gray-800"
           />
@@ -200,7 +259,7 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
           <Input
             id="codigo_postal"
             name="codigo_postal"
-            value={editPadre.codigo_postal}
+            value={editPadre.codigo_postal || ""}
             onChange={handlePadreChange}
             className="border-gray-200 text-gray-800"
           />
@@ -212,14 +271,14 @@ function EditForm({ editUsuario, editPadre, handleUsuarioChange, handlePadreChan
           <Input
             id="telefono_oficina"
             name="telefono_oficina"
-            value={editPadre.telefono_oficina}
+            value={editPadre.telefono_oficina || ""}
             onChange={handlePadreChange}
             className="border-gray-200 text-gray-800"
           />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 interface InfoDisplayProps {
@@ -231,51 +290,51 @@ function InfoDisplay({ padreData, usuarioData }: InfoDisplayProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-4">
-        <InfoItem 
-          icon={<User className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Nombre completo" 
-          value={usuarioData.nombre_completo} 
+        <InfoItem
+          icon={<User className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Nombre completo"
+          value={usuarioData.nombre_completo}
         />
-        <InfoItem 
-          icon={<Mail className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Correo electrónico" 
-          value={usuarioData.correo} 
+        <InfoItem
+          icon={<Mail className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Correo electrónico"
+          value={usuarioData.correo}
         />
-        <InfoItem 
-          icon={<Phone className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Teléfono" 
-          value={usuarioData.telefono} 
+        <InfoItem
+          icon={<Phone className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Teléfono"
+          value={usuarioData.telefono}
         />
-        <InfoItem 
-          icon={<Phone className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Celular" 
-          value={padreData.celular} 
+        <InfoItem
+          icon={<Phone className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Celular"
+          value={padreData.celular}
         />
       </div>
       <div className="space-y-4">
-        <InfoItem 
-          icon={<MapPin className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Dirección" 
-          value={padreData.direccion} 
+        <InfoItem
+          icon={<MapPin className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Dirección"
+          value={padreData.direccion}
         />
-        <InfoItem 
-          icon={<MapPin className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Ciudad" 
-          value={padreData.ciudad} 
+        <InfoItem
+          icon={<MapPin className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Ciudad"
+          value={padreData.ciudad}
         />
-        <InfoItem 
-          icon={<MapPin className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Código Postal" 
-          value={padreData.codigo_postal} 
+        <InfoItem
+          icon={<MapPin className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Código Postal"
+          value={padreData.codigo_postal}
         />
-        <InfoItem 
-          icon={<Phone className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />} 
-          label="Teléfono Oficina" 
-          value={padreData.telefono_oficina} 
+        <InfoItem
+          icon={<Phone className="h-5 w-5 text-pink-500 mr-3 mt-0.5" />}
+          label="Teléfono Oficina"
+          value={padreData.telefono_oficina}
         />
       </div>
     </div>
-  )
+  );
 }
 
 interface InfoItemProps {
@@ -293,5 +352,5 @@ function InfoItem({ icon, label, value }: InfoItemProps) {
         <p className="font-medium text-gray-800">{value}</p>
       </div>
     </div>
-  )
+  );
 }

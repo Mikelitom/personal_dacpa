@@ -10,6 +10,7 @@ export async function middleware( req: NextRequest ) {
 
   if (!session && (
     req.nextUrl.pathname.startsWith('/dashboard') ||
+    req.nextUrl.pathname.startsWith('/') ||
     req.nextUrl.pathname.startsWith('/dashboard-admin')
   )) {
     const redirectUrl = new URL('/login', req.url);

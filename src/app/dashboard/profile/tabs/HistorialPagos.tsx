@@ -6,9 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
-import { Badge } from "../../ui/badge";
-import { Button } from "../../ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
+import { Badge } from "@/app/components/ui/badge";
+import { Button } from "@/app/components/ui/button";
 import { Database } from "@/app/lib/types";
 
 type Alumno = Database["public"]["Tables"]["Alumno"]["Row"];
@@ -16,6 +16,7 @@ type PagoColegiatura = Database["public"]["Tables"]["PagoColegiatura"]["Row"];
 
 interface EstudiantesProp {
   hijosData: Alumno[];
+  pagos: PagoColegiatura[]
 }
 
 function obtenerMes(fechaString: string) {
