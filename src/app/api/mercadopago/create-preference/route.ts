@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     // Crear preferencia de pago
     // Usamos type assertion para evitar errores de TypeScript
     // ya que el SDK tiene tipos incompletos
-    const result = await preference.create({
+    const sanitizedBody = JSON.parse(JSON.stringify({
       body: {
         items,
         back_urls,
@@ -37,7 +37,9 @@ export async function POST(request: Request) {
         // @ts-ignore
         statement_descriptor: "Colegio - Pago de Colegiatura",
       } as any, // Usamos 'as any' para evitar errores de tipo
-    })
+    }))
+
+    const result = await preference.create({ body: sanitizedBody })
 
     return NextResponse.json(result)
   } catch (error: any) {

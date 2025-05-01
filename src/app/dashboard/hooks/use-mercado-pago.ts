@@ -73,8 +73,7 @@ export function useMercadoPago({
       const externalReference = `COL-${Date.now()}-${alumnoId}`
 
       // Obtener la URL base del sitio
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
-      console.log("baseurl: ", baseUrl)
+      const baseUrl = window.location.origin
 
       // Preparar datos para la API
       const preferenceData = {
@@ -86,9 +85,9 @@ export function useMercadoPago({
         external_reference: externalReference,
         notification_url: `${baseUrl}/api/mercadopago/webhook`,
         back_urls: {
-          success: `${baseUrl}/colegiatura/success?reference=${externalReference}`,
-          failure: `${baseUrl}/colegiatura/failure?reference=${externalReference}`,
-          pending: `${baseUrl}/colegiatura/pending?reference=${externalReference}`,
+          success: `${baseUrl}/dashboard/colegiatura/success?reference=${externalReference}`,
+          failure: `${baseUrl}/dashboard/colegiatura/failure?reference=${externalReference}`,
+          pending: `${baseUrl}/dashboard/colegiatura/pending?reference=${externalReference}`,
         },
       }
 
