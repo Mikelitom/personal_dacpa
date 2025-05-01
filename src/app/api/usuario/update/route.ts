@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest) {
 async function handleUpdate(req: NextRequest) {
   const body = await req.json();
 
-  if (!body?.id_padre) {
+  if (!body?.id_usuario) {
     return NextResponse.json({ error: 'Se requiere id_usuario para actualizar' }, { status: 400 })
   }
 

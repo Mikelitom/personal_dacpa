@@ -66,7 +66,7 @@ async function updateProfile(usuario: Usuario, padre: PadreFamilia) {
 
     // Enviamos solo los campos que queremos actualizar
     const usuarioData = {
-      id_usuario: usuario.id_padre,
+      id_usuario: usuario.id_usuario,
       nombre_completo: usuario.nombre_completo,
       correo: usuario.correo,
       telefono: usuario.telefono
@@ -87,20 +87,11 @@ async function updateProfile(usuario: Usuario, padre: PadreFamilia) {
     }
 
     // Enviamos los datos del padre en el formato correcto
-    const padreData = {
-      id_padre: padre.id_padre,
-      celular: padre.celular,
-      direccion: padre.direccion,
-      ciudad: padre.ciudad,
-      codigo_postal: padre.codigo_postal,
-      telefono_oficina: padre.telefono_oficina
-    };
-
-    console.log("[updateProfile] Enviando datos del padre de familia:", padreData);
+    console.log("[updateProfile] Enviando datos del padre de familia:", padre);
     const resPadre = await fetch('/api/padre-familia/update', {
       method: 'PATCH', // Cambiado a PATCH siguiendo convenciones REST
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(padreData) 
+      body: JSON.stringify(padre) 
     });
 
     console.log("[updateProfile] Respuesta del servidor para padre de familia:", resPadre.status);
