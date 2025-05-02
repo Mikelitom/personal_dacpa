@@ -1,117 +1,104 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/app/components/ui/card";
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { Label } from "@/app/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/app/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/app/components/ui/tabs";
-import { Separator } from "@/app/components/ui/separator";
-import {
-  ShoppingCart,
-  CreditCard,
-  Trash2,
-  CheckCircle2,
-  ArrowLeft,
-  Plus,
-  Minus,
-} from "lucide-react";
-import { useToast } from "@/app/components/ui/use-toast";
-import { Toaster } from "@/app/components/ui/toaster";
-import useCart from "@/app/dashboard/carrito/hooks/useCart"; // Importamos nuestro hook personalizado
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
+import { Button } from "@/app/components/ui/button"
+import { Label } from "@/app/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { Separator } from "@/app/components/ui/separator"
+import { ShoppingCart, CreditCard, Trash2, CheckCircle2, ArrowLeft, Plus, Minus, Loader2 } from "lucide-react"
+import { useToast } from "@/app/components/ui/use-toast"
+import { Toaster } from "@/app/components/ui/toaster"
+import useCart from "@/app/dashboard/carrito/hooks/useCart"
+import { useProfilePage } from "../hooks/use-profile-page"
+import { useMercadoPagoCarrito } from "../hooks/use-mercado-pago-carrito"
+import type { Alumno } from "../types"
 
 export default function CarritoPage() {
-  const { toast } = useToast();
-  const { cart, addToCart, removeFromCart, clearCart, updateQuantity } =
-    useCart(); // Usamos nuestro hook personalizado
-  const [metodo, setMetodo] = useState("tarjeta");
-  const [estudiante, setEstudiante] = useState("");
-  const [procesando, setProcesando] = useState(false);
-  const [completado, setCompletado] = useState(false);
-  const [cargando, setCargando] = useState(true);
+  const { toast } = useToast()
+  const { cart, removeFromCart, clearCart, updateQuantity } = useCart()
+  const [alumno, setAlumno] = useState<Alumno | undefined>(undefined)
+  const [completado, setCompletado] = useState(false)
+  const [cargando, setCargando] = useState(true)
+  const [processingPayment, setProcessingPayment] = useState(false)
+
+  const { alumnos } = useProfilePage()
 
   // Simulamos el tiempo de carga
   useEffect(() => {
     setTimeout(() => {
-      setCargando(false);
-    }, 500);
-  }, []);
-
-  // Datos de ejemplo para estudiantes
-  const estudiantes = [
-    { id: "est1", nombre: "Ana Pérez González", grado: "1°A" },
-    { id: "est2", nombre: "Carlos Pérez González", grado: "3°B" },
-  ];
+      setCargando(false)
+    }, 500)
+  }, [])
 
   // Calculamos el total del carrito
   const calcularTotal = () => {
-    return cart.reduce(
-      (total, item) => total + item.precio_venta * item.cantidad,
-      0
-    );
-  };
+    return cart.reduce((total, item) => total + item.precio_venta * item.cantidad, 0)
+  }
 
-  const handlePagar = () => {
-    if (!estudiante) {
+  const { createPreference, loading, error } = useMercadoPagoCarrito({
+    alumno,
+    cart,
+    calcularTotal,
+    onSuccess: (data) => {
+      console.log("Preferencia creada exitosamente:", data)
+      // No llamamos a onPagoExitoso aquí porque el usuario será redirigido a Mercado Pago
+    },
+    onError: (err) => {
+      console.error("Error al crear preferencia:", err)
       toast({
-        title: "Selecciona un estudiante",
-        description:
-          "Por favor selecciona un estudiante para continuar con el pago",
+        title: "Error al procesar el pago",
+        description: err.message || "Ocurrió un error al procesar el pago",
         variant: "destructive",
-      });
-      return;
+      })
+      setProcessingPayment(false)
+    },
+  })
+
+  const handlePagoMercadoPago = async () => {
+    if (!alumno) {
+      toast({
+        title: "Selecciona un alumno",
+        description: "Por favor selecciona un alumno para continuar con el pago",
+        variant: "destructive",
+      })
+      return
     }
 
-    setProcesando(true);
-    // Simulación de proceso de pago
-    setTimeout(() => {
-      setProcesando(false);
-      setCompletado(true);
-      clearCart(); // Vaciamos el carrito después de un pago exitoso
-    }, 2000);
-  };
+    if (cart.length === 0) {
+      toast({
+        title: "Carrito vacío",
+        description: "No hay productos en el carrito para procesar el pago",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setProcessingPayment(true)
+    await createPreference()
+    // Si llegamos aquí, es porque hubo un error (de lo contrario, se habría redirigido)
+    setProcessingPayment(false)
+  }
 
   if (cargando) {
     return (
-      <div className="p-6 bg-gray-100 min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="p-6 bg-gray-50 min-h-screen flex justify-center items-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
-    );
+    )
   }
 
   if (completado) {
     return (
-      <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="p-6 bg-gray-50 min-h-screen">
         <Card className="max-w-md mx-auto">
           <CardContent className="pt-6 flex flex-col items-center">
             <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-            <h2 className="text-xl font-bold text-center">
-              ¡Compra Realizada con Éxito!
-            </h2>
+            <h2 className="text-xl font-bold text-center">¡Compra Realizada con Éxito!</h2>
             <p className="text-center mt-2">
-              Tu pedido ha sido procesado correctamente. Recibirás una
-              confirmación por correo electrónico.
+              Tu pedido ha sido procesado correctamente. Recibirás una confirmación por correo electrónico.
             </p>
             <div className="mt-6 flex gap-4">
               <Link href="/dashboard">
@@ -127,23 +114,19 @@ export default function CarritoPage() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">Carrito de Compras</h1>
 
       {cart.length === 0 ? (
-        <Card>
+        <Card className="border-gray-200">
           <CardContent className="pt-6 flex flex-col items-center">
             <ShoppingCart className="h-16 w-16 text-gray-400 mb-4" />
-            <h2 className="text-xl font-medium text-center">
-              Tu carrito está vacío
-            </h2>
-            <p className="text-center mt-2 text-gray-500">
-              No tienes productos en tu carrito de compras.
-            </p>
+            <h2 className="text-xl font-medium text-center">Tu carrito está vacío</h2>
+            <p className="text-center mt-2 text-gray-500">No tienes productos en tu carrito de compras.</p>
             <div className="mt-6 flex gap-4">
               <Link href="/dashboard/productos/libros">
                 <Button variant="outline">Ver libros</Button>
@@ -155,45 +138,39 @@ export default function CarritoPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 border-gray-50">
           {/* Lista de productos */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 border-gray-200">
             <Card>
               <CardHeader>
                 <CardTitle>Productos ({cart.length})</CardTitle>
-                <CardDescription>
-                  Revisa los productos en tu carrito antes de continuar
-                </CardDescription>
+                <CardDescription>Revisa los productos en tu carrito antes de continuar</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-4 border-gray-100">
                   {cart.map((item) => (
                     <div
                       key={item.id_articulo}
-                      className="flex items-center space-x-4 py-2 border-b last:border-0"
+                      className="flex items-center space-x-4 py-2 border-b last:border-0 border-gray-200"
                     >
                       <div className="relative h-20 w-20 flex-shrink-0">
                         {/* <Image
                           src={item.imagen_url || "/placeholder.svg"}
                           alt={item.nombre}
                           width={80}
-                          height={100}
+                          height={80}
                           className="object-contain"
                         /> */}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium">{item.nombre}</h3>
-                        <p className="font-bold">
-                          ${item.precio_venta.toFixed(2)}
-                        </p>
+                        <p className="font-bold">${item.precio_venta.toFixed(2)}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() =>
-                            updateQuantity(item.id_articulo, item.cantidad - 1)
-                          }
+                          onClick={() => updateQuantity(item.id_articulo, item.cantidad - 1)}
                           disabled={item.cantidad <= 1}
                         >
                           <Minus className="h-4 w-4" />
@@ -202,9 +179,7 @@ export default function CarritoPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() =>
-                            updateQuantity(item.id_articulo, item.cantidad + 1)
-                          }
+                          onClick={() => updateQuantity(item.id_articulo, item.cantidad + 1)}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -227,9 +202,7 @@ export default function CarritoPage() {
                 </Button>
                 <div className="text-right">
                   <p className="text-sm text-gray-500">Subtotal</p>
-                  <p className="text-2xl font-bold">
-                    ${calcularTotal().toFixed(2)}
-                  </p>
+                  <p className="text-2xl font-bold">${calcularTotal().toFixed(2)}</p>
                 </div>
               </CardFooter>
             </Card>
@@ -243,14 +216,19 @@ export default function CarritoPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="estudiante">Asignar a estudiante</Label>
-                  <Select value={estudiante} onValueChange={setEstudiante}>
-                    <SelectTrigger id="estudiante">
-                      <SelectValue placeholder="Seleccionar estudiante" />
+                  <Label htmlFor="alumno">Asignar a alumno</Label>
+                  <Select
+                    onValueChange={(value) => {
+                      const selectedAlumno = alumnos.find((a) => a.id_alumno.toString() === value)
+                      setAlumno(selectedAlumno)
+                    }}
+                  >
+                    <SelectTrigger id="alumno">
+                      <SelectValue placeholder="Seleccionar alumno" />
                     </SelectTrigger>
                     <SelectContent>
-                      {estudiantes.map((est) => (
-                        <SelectItem key={est.id} value={est.id}>
+                      {alumnos?.map((est) => (
+                        <SelectItem key={est.id_alumno} value={est.id_alumno.toString()}>
                           {est.nombre} - {est.grado}
                         </SelectItem>
                       ))}
@@ -283,14 +261,10 @@ export default function CarritoPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button
-                  className="w-full"
-                  onClick={handlePagar}
-                  disabled={procesando}
-                >
-                  {procesando ? (
+                <Button className="w-full" onClick={handlePagoMercadoPago} disabled={processingPayment || loading}>
+                  {processingPayment || loading ? (
                     <>
-                      <span className="animate-spin mr-2">⟳</span>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Procesando...
                     </>
                   ) : (
@@ -307,5 +281,5 @@ export default function CarritoPage() {
       )}
       <Toaster />
     </div>
-  );
+  )
 }

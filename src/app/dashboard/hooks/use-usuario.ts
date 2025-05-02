@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 export function useUsuario() {
   const supabase = createClientComponentClient<Database>();
   const [ authUser, setAuthUser ] = useState<any>(null);
-  const [ loading, setLoading ] = useState(true);
+  const [ loading, setLoading ] = useState(true)
   const [ usuario, setUsuario ] = useState<Usuario | null>()
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function useUsuario() {
       } finally {
         setLoading(false);
       }
-    };
+    }
     
     getSession()
   }, [supabase])
