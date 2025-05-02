@@ -2,21 +2,19 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import type { Alumno, PagoColegiatura } from "../types"
+import type { Alumno, ArticuloConCantidad } from "@/app/dashboard/types"
 
 interface MercadoPagoOptions {
-  alumnos: Alumno[]
-  pagos: PagoColegiatura[]
-  mesesSeleccionados: string[]
+  cart: ArticuloConCantidad[] // Cambiado de productos a cart para consistencia
+  alumno: Alumno | undefined
   calcularTotal: () => number
   onSuccess?: (data: any) => void
   onError?: (error: any) => void
 }
 
-export function useMercadoPago({
-  alumnos,
-  pagos,
-  mesesSeleccionados,
+export function useMercadoPagoCarrito({
+  alumno,
+  cart, // Cambiado de productos a cart
   calcularTotal,
   onSuccess,
   onError,
@@ -25,52 +23,28 @@ export function useMercadoPago({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Verificar si la fecha actual es posterior a la fecha de vencimiento
-  const estaVencido = (fechaPago: string) => {
-    if (!fechaPago) return false
-    const fechaVencimiento = new Date(fechaPago)
-    const hoy = new Date()
-    return hoy > fechaVencimiento
-  }
-
-  const createPreference = async (estudianteId: string) => {
+  // Crear preferencia para el pago de productos en el carrito
+  const createPreference = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Obtener información del estudiante
-      const alumnoId = Number.parseInt(estudianteId)
-      const alumno = alumnos.find((a) => a.id_alumno === alumnoId)
-
       if (!alumno) {
-        throw new Error("Estudiante no encontrado")
+        throw new Error("Debe seleccionar un alumno para continuar")
       }
 
-      const nombreCompleto = `${alumno.nombre} ${alumno.apellido_paterno} ${alumno.apellido_materno}`
-
-      // Preparar items para Mercado Pago
-      const items = mesesSeleccionados
-        .map((mesId) => {
-          const pago = pagos.find((p) => p.id_colegiatura.toString() === mesId)
-          if (!pago) return null
-
-          const isVencido = pago.estado === "pendiente" && estaVencido(pago.fecha_pago)
-          const interes = isVencido ? pago.monto * 0.1 : 0
-          const montoTotal = pago.monto + interes
-
-          return {
-            id: pago.id_colegiatura.toString(),
-            title: `Colegiatura: ${pago.concepto}${isVencido ? " (incluye interés)" : ""}`,
-            description: `Pago de colegiatura para ${nombreCompleto}`,
-            quantity: 1,
-            currency_id: "MXN", // Ajusta según tu moneda
-            unit_price: montoTotal,
-          }
-        })
-        .filter(Boolean)
+      // Preparar items para Mercado Pago desde los productos del carrito
+      const items = cart.map((producto) => ({
+        id: producto.id_articulo.toString(),
+        title: producto.nombre,
+        description: `Compra de ${producto.nombre}`,
+        quantity: producto.cantidad || 1,
+        currency_id: "MXN", // Ajusta según tu moneda
+        unit_price: producto.precio_venta,
+      }))
 
       // Crear referencia externa única
-      const externalReference = `COL-${Date.now()}-${alumnoId}`
+      const externalReference = `CART-${Date.now()}`
 
       // Obtener la URL base del sitio
       const baseUrl = window.location.origin
@@ -79,19 +53,17 @@ export function useMercadoPago({
       const preferenceData = {
         items,
         payer: {
-          name: alumno.nombre,
-          surname: `${alumno.apellido_paterno} ${alumno.apellido_materno}`,
+          name: alumno?.nombre || "Cliente",
+          surname: `${alumno?.apellido_paterno || ""} ${alumno?.apellido_materno || ""}`.trim() || "Apellido",
         },
         external_reference: externalReference,
         notification_url: `${baseUrl}/api/mercadopago/webhook`,
         back_urls: {
-          success: `${baseUrl}/dashboard/colegiatura/success?reference=${externalReference}`,
-          failure: `${baseUrl}/dashboard/colegiatura/failure?reference=${externalReference}`,
-          pending: `${baseUrl}/dashboard/colegiatura/pending?reference=${externalReference}`,
+          success: `${baseUrl}/dashboard/carrito/success?reference=${externalReference}`,
+          failure: `${baseUrl}/dashboard/carrito/failure?reference=${externalReference}`,
+          pending: `${baseUrl}/dashboard/carrito/pending?reference=${externalReference}`,
         },
       }
-
-      
 
       console.log("Enviando datos de preferencia:", preferenceData)
 
@@ -118,10 +90,7 @@ export function useMercadoPago({
         JSON.stringify({
           items,
           total: calcularTotal(),
-          estudiante: nombreCompleto,
-          grado: `${alumno.grado}${alumno.grupo}`,
           fecha: new Date().toISOString(),
-          mesesIds: mesesSeleccionados,
         }),
       )
 

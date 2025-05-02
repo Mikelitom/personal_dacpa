@@ -3,6 +3,7 @@ import type { Database } from "@/app/lib/types"
 
 // Usar los tipos directamente de la base de datos
 export type Estudiante = Database["public"]["Tables"]["Alumno"]["Row"]
+export type Articulo = Database["public"]["Tables"]["Articulo"]["Row"]
 export type PadreFamilia = Database["public"]["Tables"]["PadreFamilia"]["Row"]
 export type HistorialPago = Database["public"]["Tables"]["HistorialPago"]["Row"]
 export type Convenio = Database["public"]["Tables"]["Convenio"]["Row"] & {

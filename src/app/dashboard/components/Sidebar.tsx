@@ -38,8 +38,8 @@ interface NavItem {
 export function Sidebar({ className, onCloseMobileMenu }: SidebarProps) {
   const pathname = usePathname();
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
-  const [notificationsCount, setNotificationsCount] = useState(4);
-  const [carritoCount, setCarritoCount] = useState(0);
+  const [notificationsCount, setNotificationsCount] = useState(0);
+  const [carritoCount, setCarritoCount] = useState<number>();
 
   // Definición dinámica de los ítems de navegación
   const navItems: NavItem[] = [
@@ -103,6 +103,50 @@ export function Sidebar({ className, onCloseMobileMenu }: SidebarProps) {
     });
   }, [pathname]);
 
+  const actualizarCarritoCount = () => {
+    const productosCarrito = JSON.parse(localStorage.getItem("carrito") || "[]");
+
+    if (Array.isArray(productosCarrito)) {
+      const totalItems = productosCarrito.reduce((acc: number, producto: { cantidad: number }) => acc + producto.cantidad, 0);
+      setCarritoCount(totalItems);
+    } else {
+      setCarritoCount(0);
+    }
+  };
+
+  
+
+  useEffect(() => {
+    // Actualiza el carrito al montar el componente
+    actualizarCarritoCount();
+
+    // Crear un listener para el evento de cambio del carrito
+    const handleStorageChange = () => {
+      actualizarCarritoCount();
+    };
+
+    // Escuchar el evento 'storage' que se dispara cuando hay cambios en el localStorage
+    window.addEventListener('storage', handleStorageChange);
+
+    // Limpiar el listener cuando el componente se desmonte
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Obtener los productos del carrito desde localStorage
+    const productosCarrito = JSON.parse(localStorage.getItem("cart") || "[]");
+
+    // Verificar que productosCarrito es un arreglo antes de usar .reduce
+    if (Array.isArray(productosCarrito)) {
+      // Sumar las cantidades de cada producto
+      const totalItems = productosCarrito.reduce((acc: number, producto: { cantidad: number }) => acc + producto.cantidad, 0);
+      setCarritoCount(totalItems);
+    } else {
+      setCarritoCount(0);  // En caso de que no sea un arreglo válido, poner el contador a 0
+    }
+  }, []);
   // Función para manejar la apertura/cierre de submenús
   const toggleSubMenu = (href: string) => {
     setOpenSubMenus((prev) => ({
@@ -232,7 +276,7 @@ export function Sidebar({ className, onCloseMobileMenu }: SidebarProps) {
         <Link href="/login" className="block w-full">
           <Button
             variant="outline"
-            className="w-full mt-4 flex items-center justify-center border-gray-200 text-gray-800 hover:bg-gray-50"
+            className="w-full mt-4 flex items-center hover:cursor-pointer justify-center border-gray-200 text-gray-800 hover:bg-gray-50"
           >
             <LogOut className="mr-2" size={16} />
             <span>Cerrar Sesión</span>
