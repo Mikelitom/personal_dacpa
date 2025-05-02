@@ -303,5 +303,53 @@ export const userService = {
     }
 
     return { message: 'Padre actualizado correctamente. '}
+  },
+  async createPedido(id_padre: number, id_alumno: number, total: number, estado: string) {
+    if (!id_padre || !id_alumno) {
+      throw new Error('Debe de ingresar un ID de padre y alumno valido');
+    }
+
+    const { data, error } = await supabase
+      .from('Pedido')
+      .insert({
+        id_padre: id_padre,
+        id_alumno: id_alumno,
+        date: new Date().toISOString(),
+        total: total,
+        estado: estado
+      })
+
+    if (error) {
+      throw new Error(`Error insertando pedido: ${error.message}`)
+    }
+
+    return data;
+  },
+  async addArticles(articulos: Articulo[]) {
+    if (!articulos) {
+      throw new Error('No hay articulos para agregar.')
+    }
+
+    const { data: dataPedido, error: errorPedido } = await supabase
+      .from('Pedido')
+      .select('*')
+      .order('id_pedido', { ascending: false } )
+      .limit(1)
+
+    if (errorPedido) {
+      throw new Error(`Ocurrio un error al buscar: ${errorPedido.message}`)
+    }
+
+    // const idPedido = dataPedido.id_pedido;
+
+    // articulos.map(articulo => {
+    //   const { data, error } = await supabase
+    //     .from('PedidoArticulo')
+    //     .insert({
+    //       id_pedido: dataPedido.id_pedido,
+    //       id_articulo: articulo.id_articulo,
+    //       cantidad: 
+    //     })
+    // })
   }
 };
