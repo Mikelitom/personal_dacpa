@@ -499,7 +499,6 @@ export type Database = {
           id_articulo: number;
           cantidad: number;
           precio_unitario: number;
-          talla: string;
         };
         Insert: {
           id_pedidoarticulo: number;
@@ -507,7 +506,6 @@ export type Database = {
           id_articulo: number;
           cantidad?: number;
           precio_unitario?: number;
-          talla?: string;
         };
         Update: {
           id_pedidoarticulo?: number;
@@ -515,9 +513,8 @@ export type Database = {
           id_articulo?: number;
           cantidad?: number;
           precio_unitario?: number;
-          talla?: string;
         };
-      };
+      }
     };
   };
 };

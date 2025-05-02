@@ -76,6 +76,8 @@ export default function CarritoPage() {
       return
     }
 
+    
+
     setProcessingPayment(true)
     await createPreference()
     // Si llegamos aquí, es porque hubo un error (de lo contrario, se habría redirigido)
