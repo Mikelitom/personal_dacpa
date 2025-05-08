@@ -6,13 +6,16 @@ import { PaymentList } from "./components/payment-list"
 import { PaymentForm } from "./components/payment-form"
 import { PaymentReceipt } from "./components/payment-receipt"
 import { PaymentSuccess } from "./components/payment-success"
+import { useUsuario } from "../hooks/use-usuario"
 
 export default function ColegiaturaPage() {
+  const { usuario, loading: userLoading } = useUsuario()
+
   const {
     alumnos,
     convenios,
     pagos,
-    loading,
+    loading: loadingColegiatura,
     mesesSeleccionados,
     estudianteSeleccionado,
     pagado,
@@ -24,6 +27,8 @@ export default function ColegiaturaPage() {
     handleNewPayment,
     setTicketDialogOpen,
   } = useColegiatura()
+
+  const loading = userLoading || loadingColegiatura;
 
   if (loading) {
     return (
@@ -62,6 +67,7 @@ export default function ColegiaturaPage() {
             {/* Formulario de pago */}
             <PaymentForm
               alumnos={alumnos}
+              email={usuario?.correo}
               pagos={pagos}
               mesesSeleccionados={mesesSeleccionados}
               calcularTotal={calcularTotal}

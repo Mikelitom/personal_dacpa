@@ -1,3 +1,4 @@
 {
-  "editor.fontFamily": "'JetBrainsMono Nerd Font','CaskadyaCove Nerd Font Mono',Consolas, 'Courier New', monospace"
+  "editor.fontFamily": "'Cascadia Mono','JetBrainsMono Nerd Font','CaskadyaCove Nerd Font Mono',Consolas, 'Courier New', monospace",
+  "files.autoSave": "afterDelay"
 }
