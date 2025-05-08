@@ -7,10 +7,12 @@ import type { Alumno, PagoColegiatura } from "../../types"
 import { useMercadoPago } from "../../hooks/use-mercado-pago"
 import { useState } from "react"
 import { Alert, AlertDescription } from "@/app/components/ui/alert"
+import { useMercadoPagoASP } from "../../hooks/use-mercado-pago-asp"
 
 interface PaymentFormProps {
   alumnos: Alumno[]
   pagos: PagoColegiatura[]
+  email?: string
   mesesSeleccionados: string[]
   calcularTotal: () => number
   onPagoExitoso: (ticketInfo: any) => void
@@ -20,6 +22,7 @@ interface PaymentFormProps {
 export function PaymentForm({
   alumnos,
   pagos,
+  email,
   mesesSeleccionados,
   calcularTotal,
   onPagoExitoso,
@@ -35,10 +38,11 @@ export function PaymentForm({
     return hoy > fechaVencimiento
   }
 
-  const { createPreference, loading, error } = useMercadoPago({
+  const { createPreference, loading, error } = useMercadoPagoASP({
     alumnos,
     pagos,
     mesesSeleccionados,
+    email,
     calcularTotal,
     onSuccess: (data) => {
       console.log("Preferencia creada exitosamente:", data)
