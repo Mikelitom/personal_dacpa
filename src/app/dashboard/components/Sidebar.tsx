@@ -233,13 +233,13 @@ export function Sidebar({ className, onCloseMobileMenu }: SidebarProps) {
     >
       {/* Header con Logo */}
       <div className="flex flex-col items-center py-6 px-4 border-b border-gray-200">
-        <div className="w-24 h-24 relative mb-2 bg-gray-50 flex items-center justify-center">
+        <div className="w-24 h-24 relative mb-2 bg-gray-50 flex items-center justify-center rounded-full overflow-hidden">
           <Image
-            src="/placeholder.svg?height=96&width=96"
+            src="https://imgur.com/uwsk0DN.jpg"
             alt="Colegio Logo"
             width={96}
             height={96}
-            className="object-contain"
+            className="object-cover"
           />
         </div>
         <h2 className="text-xl font-bold text-[#E94D97] font-heading">
