@@ -121,7 +121,10 @@ export default function CarritoPage() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Carrito de Compras</h1>
+      <div className="flex items-center gap-2 mb-6">
+        <ShoppingCart size={25} strokeWidth={1.5} />
+        <h1 className="text-2xl font-bold">Carrito de Compras</h1>
+      </div>
 
       {cart.length === 0 ? (
         <Card className="border-gray-200">
@@ -142,8 +145,8 @@ export default function CarritoPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 border-gray-50">
           {/* Lista de productos */}
-          <div className="lg:col-span-2 border-gray-200">
-            <Card>
+          <div className="lg:col-span-2 border-gray-50">
+            <Card className="border-pink-500 border-l-4">
               <CardHeader>
                 <CardTitle>Productos ({cart.length})</CardTitle>
                 <CardDescription>Revisa los productos en tu carrito antes de continuar</CardDescription>
@@ -245,10 +248,6 @@ export default function CarritoPage() {
                     <span>Subtotal</span>
                     <span>${calcularTotal().toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Envío</span>
-                    <span>Gratis</span>
-                  </div>
                   <Separator className="my-2" />
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
@@ -263,7 +262,7 @@ export default function CarritoPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" onClick={handlePagoMercadoPago} disabled={processingPayment || loading}>
+                <Button className="w-full bg-pink-300" onClick={handlePagoMercadoPago} disabled={processingPayment || loading}>
                   {processingPayment || loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
