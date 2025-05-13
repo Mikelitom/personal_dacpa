@@ -55,10 +55,10 @@ export function useMercadoPagoASP({
       const montoTotal = pago.monto + interes
 
       const baseUrl = window.location.origin || "";
-      const apiUrl = "http://localhost:5143";
+      const apiUrl = "https://mercadopagoapidacpa.onrender.com";
 
       const preferenceData = {
-        id: `COL-${Date.now()}-${alumnoId}`,
+        referenciaExterna: `COL-${Date.now()}-${alumnoId}`,
         concepto: `Colegiatura: ${pago.concepto}${isVencido ? " (incluye interés)" : ""}`,
         cantidad: 1,
         precioUnitario: montoTotal,
