@@ -16,7 +16,7 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     const reference = searchParams.get("reference")
     if (!reference) {
-      router.push("/colegiatura")
+      router.push("/dashboard/colegiatura")
       return
     }
 
