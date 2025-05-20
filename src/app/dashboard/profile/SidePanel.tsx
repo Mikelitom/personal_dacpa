@@ -80,7 +80,7 @@ interface NavButtonProps {
   setActiveTab: Dispatch<SetStateAction<string>>;
 }
 
-function NavButton({ icon, label, tabId, activeTab, setActiveTab }: NavButtonProps) {
+function NavButton({ icon, label, tabId, activeTab, setActiveTab }: Readonly<NavButtonProps>) {
   return (
     <Button
       variant={activeTab === tabId ? "default" : "ghost"}
